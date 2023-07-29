@@ -959,11 +959,11 @@
 .md-typeset .circle-check > .admonition-title,
 .md-typeset .circle-check > summary {
   color:rgb(35, 35, 37);
-  background-color: rgba(221, 211, 166, 0.815);
+  background-color: rgba(193, 241, 138, 0.815);
 }
 .md-typeset .circle-check > .admonition-title::before,
 .md-typeset .circle-check > summary::before {
-  background-color: rgb(209, 22, 9);
+  background-color: rgb(68, 160, 7);
   -webkit-mask-image: var(--md-admonition-icon--circle-check);
           mask-image: var(--md-admonition-icon--circle-check);
 }
