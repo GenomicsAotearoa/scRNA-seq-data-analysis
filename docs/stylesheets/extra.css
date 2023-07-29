@@ -5,7 +5,7 @@
 :root {
 
   /* Default color shades */
-  --md-default-fg-color:               #0d4f9b;
+  --md-default-fg-color:               #1b3e9e;
   --md-default-fg-color--light:        #1a0206;
   --md-default-fg-color--lighter:      rgba(18, 47, 77, 0.5);
   --md-default-fg-color--lightest:     rgb(11,33,57,0.1);
@@ -17,8 +17,8 @@
 */
 
   /* Primary color shades */
-  --md-primary-fg-color:               #0d4f9b;
-  --md-primary-fg-color--light:        rgb(35,171,227);
+  --md-primary-fg-color:               #1b3e9e;
+  --md-primary-fg-color--light:        rgb(14, 66, 209);
   --md-primary-fg-color--dark:         rgb(11,33,57);
   /*
   --md-primary-bg-color:               rgb(255,255,255);
