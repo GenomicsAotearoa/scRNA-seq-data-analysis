@@ -1,12 +1,12 @@
-site_name: Intermediate Shell for Bioinformatics
+site_name: Analysis of single cell RNA-seq data
 site_author: Genomics Aotearoa & NeSI
 site_dir: public
-site_url: "https://genomicsaotearoa.github.io/shell-for-bioinformatics/"
+site_url: "https://genomicsaotearoa.github.io/scRNA-seq-data-analysis/"
 
 #Repository information
 
-repo_name:  GenomicsAotearoa/shell-for-bioinformatics 
-repo_url: https://github.com/GenomicsAotearoa/shell-for-bioinformatics
+repo_name:  GenomicsAotearoa/scRNA-seq-data-analysis 
+repo_url: https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis
 
 
 theme:
