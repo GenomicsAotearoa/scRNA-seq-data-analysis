@@ -4,7 +4,7 @@
 
 !!! circle-info "For Deverlopers"
     - working directory `/nesi/project/nesi02659/sc-rna-data`
-    - Use `sc-RNA/2023-07-gimkl-2022a-R-bundle-Bioconductor-3.15-R-4.2.1` ( OR just `sc_RNA`) module which contains all of the required R packahges 
+    - Use `sc-RNA/2023-07-gimkl-2022a-R-bundle-Bioconductor-3.15-R-4.2.1` ( OR just `sc_RNA`) module which contains all of the required R packages 
 
 
 
