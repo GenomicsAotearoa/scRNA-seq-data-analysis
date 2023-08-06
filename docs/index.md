@@ -40,3 +40,7 @@ flowchart TD
     - [ ] Attend [Genomics Data Carpentry](https://datacarpentry.org/genomics-workshop/),  [RNA-Seq Data Analysis](https://genomicsaotearoa.github.io/RNA-seq-workshop/), [Introduction to R](https://genomicsaotearoa.github.io/Introduction-to-R/) and/or [Intermediate R](https://genomicsaotearoa.github.io/Intermediate-R/)
 
 <br>
+
+!!! book-atlas "References"
+
+    - https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0947-7
