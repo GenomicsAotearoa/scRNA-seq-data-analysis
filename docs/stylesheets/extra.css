@@ -1017,7 +1017,7 @@
 .md-typeset .r-project-2 > .admonition-title,
 .md-typeset .r-project-2 > summary {
   color:rgb(16, 18, 19);
-  background-color: rgba(135,206,235);
+  background-color: rgb(151, 207, 230);
 }
 .md-typeset .r-project-2 > .admonition-title::before,
 .md-typeset .r-project-2 > summary::before {
