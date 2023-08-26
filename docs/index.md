@@ -45,3 +45,4 @@ flowchart TD
 
     - https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0947-7
     - https://www.nature.com/articles/nbt.4091
+    - https://arxiv.org/abs/physics/0512106
