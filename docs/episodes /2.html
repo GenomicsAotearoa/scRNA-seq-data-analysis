@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>quarto-inputeee9b936</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="2_files/libs/quarto-html/quarto.js"></script>
+<script src="2_files/libs/quarto-html/popper.min.js"></script>
+<script src="2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="2_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="2_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+<section id="qc-and-exploratory-analysis" class="level1">
+<h1>2. QC and Exploratory Analysis</h1>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+library(DropletUtils)
+library(scater)
+library(ensembldb)
+library(AnnotationHub)
+library(BiocParallel)
+library(tidyverse)
+library(patchwork)
+library(ggvenn)
+```</code></pre>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+setwd("/nesi/project/nesi02659/sc-rna")
+samplesheet &lt;- read.tsv("Data/sample_sheet.tsv")
+```
+
+- Here we are selecting to use forked processes with MulticoreParam and instructing the function to use 4 cores. 
+```r
+bp.params &lt;- MulticoreParam(workers = 7)
+```
+```r
+sample.path &lt;- "Data/CellRanger_Outputs/SRR9264343/outs/filtered_feature_bc_matrix/"
+sce.sing &lt;- read10xCounts(sample.path, col.names=TRUE, BPPARAM = bp.params)
+sce.sing
+```
+??? circle-check "Output"
+
+    ```bash
+    class: SingleCellExperiment 
+    dim: 37764 3153 
+    metadata(1): Samples
+    assays(1): counts
+    rownames(37764): ENSG00000243485 ENSG00000237613 ...
+      ENSG00000278817 ENSG00000277196
+    rowData names(3): ID Symbol Type
+    colnames(3153): AAACCTGAGACTTTCG-1 AAACCTGGTCTTCAAG-1 ...
+      TTTGTCACAGGCTCAC-1 TTTGTCAGTTCGGCAC-1
+    colData names(2): Sample Barcode
+    reducedDimNames(0):
+    mainExpName: NULL
+    altExpNames(0):
+    ```</code></pre>
+<section id="the-singlecellexperiment-object" class="level3">
+<h3 class="anchored" data-anchor-id="the-singlecellexperiment-object">The SingleCellExperiment object</h3>
+<p>!!! quote “”</p>
+<pre><code>The data have been loaded as a [SingleCellExperiment](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) object. The details of the structure of the object are described here. In summary, it stores various data types in a single object. Currently it will contain:
+
+- the count matrix
+- feature (gene) metadata
+- cell (droplet) metadata
+
+Later we will also add the outcomes of downstream analysis such as normalisation and dimensionality reduction.
+
+![image](../r_images/single_cell_experiment.png)</code></pre>
+</section>
+<section id="the-counts-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="the-counts-matrix">The counts matrix</h3>
+<p>Compared to bulk RNA-seq, Single-cell RNA-seq data is sparse, i.e., there are many missing values or zeroes. This is particularly true with droplet-based methods such as 10X, mostly because:</p>
+<ul>
+<li>any given cell does not express each gene</li>
+<li>the library preparation does not capture all transcripts the cell was expressing</li>
+<li>the sequencing depth per cell is relatively low and not all expressed genes are detected</li>
+</ul>
+<p>We can access the counts matrix with the counts function. Given the large number of droplets in a sample, count matrices can be large.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+dim(counts(sce.sing))
+```
+
+- They are however very sparse, that is, most of the entries are 0’s. To save memory the counts can be stored in a ‘sparse matrix’ that only stores non-zero values, in this case as a dgCMatrix object.
+```r
+counts(sce.sing)[1:10, 1:10]
+```
+??? circle-check "Output"
+    ```r
+    10 x 10 sparse Matrix of class "dgCMatrix"
+      [[ suppressing 10 column names 'AAACCTGAGACTTTCG-1', 'AAACCTGGTCTTCAAG-1', 'AAACCTGGTGCAACTT-1' ... ]]
+                                       
+    ENSG00000243485 . . . . . . . . . .
+    ENSG00000237613 . . . . . . . . . .
+    ENSG00000186092 . . . . . . . . . .
+    ENSG00000238009 . . . . . . . . . .
+    ENSG00000239945 . . . . . . . . . .
+    ENSG00000239906 . . . . . . . . . .
+    ENSG00000241860 . . . . . . . . . .
+    ENSG00000241599 . . . . . . . . . .
+    ENSG00000286448 . . . . . . . . . .
+    ENSG00000236601 . . . . . . . . . .
+    ```</code></pre>
+</section>
+<section id="features" class="level3">
+<h3 class="anchored" data-anchor-id="features">Features</h3>
+<p>Details about the “features” (in this case genes) can by accessed using the rowData function. Currently it contains the ensembl gene ID and the gene symbol, which have been derived from the 10x reference used by CellRanger. It also contains a “Type” column, which tells us what sort of data we are looking at; in this case it is “Gene Expression”. If we wish to, we can add further annotation to the features by adding extra columns to this data frame.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+rowData(sce.sing)
+```
+??? circle-check "Output - The rows of this table correspond to the rows of the count matrix; the row names of this table will match the row names of the counts matrix - currently these are the Ensembl IDS:"
+
+    ```r
+    DataFrame with 37764 rows and 3 columns
+                                 ID          Symbol            Type
+                        &lt;character&gt;     &lt;character&gt;     &lt;character&gt;
+    ENSG00000243485 ENSG00000243485     MIR1302-2HG Gene Expression
+    ENSG00000237613 ENSG00000237613         FAM138A Gene Expression
+    ENSG00000186092 ENSG00000186092           OR4F5 Gene Expression
+    ENSG00000238009 ENSG00000238009 ENSG00000238009 Gene Expression
+    ENSG00000239945 ENSG00000239945 ENSG00000239945 Gene Expression
+    ...                         ...             ...             ...
+    ENSG00000277836 ENSG00000277836 ENSG00000277836 Gene Expression
+    ENSG00000278633 ENSG00000278633 ENSG00000278633 Gene Expression
+    ENSG00000276017 ENSG00000276017 ENSG00000276017 Gene Expression
+    ENSG00000278817 ENSG00000278817 ENSG00000278817 Gene Expression
+    ENSG00000277196 ENSG00000277196 ENSG00000277196 Gene Expression
+    ```
+```r
+rownames(counts(sce.sing))[1:6]
+```</code></pre>
+</section>
+<section id="droplet-annotation" class="level3">
+<h3 class="anchored" data-anchor-id="droplet-annotation">Droplet annotation</h3>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+colData(sce.sing)
+colnames(counts(sce.sing))[1:6]
+```</code></pre>
+</section>
+<section id="properties-of-scrna-seq-data" class="level2">
+<h2 class="anchored" data-anchor-id="properties-of-scrna-seq-data">Properties of scRNA-seq data</h2>
+<section id="number-of-genes-detected-per-cell" class="level3">
+<h3 class="anchored" data-anchor-id="number-of-genes-detected-per-cell">Number of genes detected per cell</h3>
+<p>The number and identity of genes detected in a cell varies greatly across cells: the total number of genes detected across all cells is far larger than the number of genes detected in each cell.</p>
+<p>For the current set of samples the total number of genes detected across cells was 26468 out of 37764 gene in the reference, but if we look at the number of genes detected in each cell, we can see that this ranges from 40 to 5547, with a median of 2562.</p>
+<p>!!! r-project “code” <code>r     genesPerCell &lt;- colSums(counts(sce.sing) &gt; 0)     plot(density(genesPerCell), main="", xlab="Genes per cell")</code> <img src="../r_images/1-number_of_genes_per_cell.png" class="img-fluid" width="600" alt="image"></p>
+</section>
+<section id="total-umi-for-a-gene-versus-the-number-of-times-detected" class="level3">
+<h3 class="anchored" data-anchor-id="total-umi-for-a-gene-versus-the-number-of-times-detected">Total UMI for a gene versus the number of times detected</h3>
+<p>If we compare the number of UMI’s assigned to an individual gene to the number of cells in which that gene is detected, we can see that highly expressed genes tend to be detected in a higher proportion of cells than lowly expressed genes. Remember that due to low sequencing depth, not all expressed genes are detected in a cell.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+plot(rowSums(counts(sce.sing)) / rowSums(counts(sce.sing) &gt; 0),
+     rowMeans(counts(sce.sing) &gt; 0),
+     log = "x",
+     xlab="Mean UMIs per cell",
+     ylab="proportion of cells expressing the gene"
+)
+```
+![image](../r_images/2-total-umi-gene-versus-number.png){width="600"}</code></pre>
+</section>
+<section id="distribution-of-counts-for-a-gene-across-cells" class="level3">
+<h3 class="anchored" data-anchor-id="distribution-of-counts-for-a-gene-across-cells">Distribution of counts for a gene across cells</h3>
+<p>We could also look at the distribution of counts for individual genes across all cells. The plot below shows this distribution for the top 20 genes detected.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+rel_expression &lt;- t( t(counts(sce.sing)) / colSums(counts(sce.sing))) * 100
+rownames(rel_expression) &lt;- rowData(sce.sing)$Symbol
+most_expressed &lt;- sort(rowSums( rel_expression ), decreasing = T)[20:1]
+plot_data &lt;- as.matrix(t(rel_expression[names(most_expressed),]))
+
+boxplot(plot_data, cex=0.1, las=1, xlab="% total count per cell", horizontal=TRUE)
+```
+
+??? circle-check "Output"
+
+    ![image](../r_images/3-distribution-of-counts-for-a-gene.png)</code></pre>
+</section>
+</section>
+<section id="quality-control" class="level2">
+<h2 class="anchored" data-anchor-id="quality-control">Quality Control</h2>
+<p>??? circle-info “info”</p>
+<pre><code>The cell calling performed by CellRanger does not always retain only droplets containing cells. Poor-quality cells, or rather droplets, may be caused by cell damage during dissociation or failed library preparation. They usually have low UMI counts, few genes detected and/or high mitochondrial content. The presence of these droplets in the data set may affect *normalisation*, assessment of *cell population heterogeneity*, and *clustering*:
+
+- *Normalisation:* Contaminating genes, ‘the ambient RNA’, are detected at low levels in all libraries. In low quality libraries with low RNA content, scaling will increase counts for these genes more than for better-quality cells, resulting in their apparent upregulation in these cells and increased variance overall.
+- *Cell population heterogeneity:* variance estimation and dimensionality reduction with PCA where the first principal component will be correlated with library size, rather than biology.
+- *Clustering:* higher mitochondrial and/or nuclear RNA content may cause low-quality cells to cluster separately or form states or trajectories between distinct cell types.
+
+
+In order to remove or reduce the impact of poor-quality droplets on our downstream analysis we will attempt to filter them out using some QC metrics. The three principle means of doing this are to apply thresholds for inclusion on three characteristics:
+
+    - The library size defined as the total sum of UMI counts across all genes; cells with small library sizes are considered to be of low quality as the RNA has not been efficiently captured, i.e. converted into cDNA and amplified, during library preparation.
+
+    - The number of expressed genes in each cell defined as the number of genes with non-zero counts for that cell; any cell with very few expressed genes is likely to be of poor quality as the diverse transcript population has not been successfully captured.
+
+    - The proportion of UMIs mapped to genes in the mitochondrial genome; high proportions are indicative of poor-quality cells, possibly because of loss of cytoplasmic RNA from perforated cells (the reasoning is that mitochondria are larger than individual transcript molecules and less likely to escape through tears in the cell membrane).
+
+The [scater](https://bioconductor.org/packages/3.11/bioc/html/scater.html) function `addPerCellQC()` will compute various per droplet QC metrics and will add this information as new columns in the droplet annotation (`colData`) of the single cell object.</code></pre>
+<section id="load-multiple-samples" class="level3">
+<h3 class="anchored" data-anchor-id="load-multiple-samples">Load multiple samples</h3>
+<p>We can load multiple samples at the same time using the read10xCounts command. This will create a single object containing the data for multiple samples. We can then QC and filter the samples in conjunction. As we will see later, this is not always optimal when samples have been processed in multiple batches.</p>
+<p>As an example we will one sample from each sample group. Again we will start with the filtered counts matrix, which only contains cells called by CellRanger. We pass the read10xCounts a named vector containing the paths to the filtered counts matrices that we wish to load; the names of the vector will be used as the sample names in the Single Cell Experiment object.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+samples &lt;- samplesheet$Sample[c(1,5,7,9)]
+list_of_files &lt;- str_c("Data/CellRanger_Outputs/", 
+                       samples, 
+                       "/outs/filtered_feature_bc_matrix")
+names(list_of_files) &lt;- samples
+list_of_files
+
+sce &lt;- read10xCounts(list_of_files, col.names=TRUE, BPPARAM = bp.params)
+sce
+```
+
+??? circle-check "Output"
+    ```bash
+    class: SingleCellExperiment 
+    dim: 37764 14809 
+    metadata(1): Samples
+    assays(1): counts
+    rownames(37764): ENSG00000243485 ENSG00000237613 ... ENSG00000278817 ENSG00000277196
+    rowData names(3): ID Symbol Type
+    colnames(14809): 1_AAACCTGAGACTTTCG-1 1_AAACCTGGTCTTCAAG-1 ... 4_TTTGGTTAGGTGCTAG-1 4_TTTGGTTGTGCATCTA-1
+    colData names(2): Sample Barcode
+    reducedDimNames(0):
+    mainExpName: NULL
+    altExpNames(0):
+    ```</code></pre>
+</section>
+<section id="modify-the-droplet-annotation" class="level3">
+<h3 class="anchored" data-anchor-id="modify-the-droplet-annotation">Modify the droplet annotation</h3>
+<p>Currently, the droplet annotation in <code>colData</code> slot of the <code>sce</code> object has two columns: “Sample” and “Barcode”. The “Sample” is the name of the sample as we provided it to <code>read10xCounts</code>, the “Barcode” is the barcode for the droplet (cell).</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+colData(sce)
+```</code></pre>
+<p>The “Barcode” column contains the cell/droplet barcode and comprises the actual sequence and a ‘group ID’, e.g.&nbsp;AAACCTGAGAAACCAT-1. The ‘group ID’ helps distinguish cells from different samples that have identical barcode sequences, however, as each sample was processed separately with CellRanger, the group ID is set to 1 in all data sets. In the rownames DropUtils has helpfully add a prefix to each barcode to distinguish between samples. We will replace the “Barcode” column with the these.</p>
+<p>We will also add information from the sample metadata table to the <code>colData</code> object. We will be using the merge function to do this. Unfortunately, this function removes the rownames from the DFrame, so we will need to replace them.</p>
+<p>!!! r-project “code” <code>r     sce$Barcode &lt;- rownames(colData(sce))     colData(sce) &lt;- merge(colData(sce), samplesheet, by="Sample", sort=FALSE)     rownames(colData(sce)) &lt;- sce$Barcode</code></p>
+</section>
+<section id="undetected-genes" class="level3">
+<h3 class="anchored" data-anchor-id="undetected-genes">Undetected genes</h3>
+<p>Although the count matrix has 37764 genes, many of these will not have been detected in any droplet.</p>
+<p>About a fifth of the genes have not been detected in any droplet. We can remove these before proceeding in order to reduce the size of the single cell experiment object.</p>
+<p>!!! r-project “code” <code>r     detected_genes &lt;- rowSums(counts(sce)) &gt; 0     table(detected_genes)     sce &lt;- sce[detected_genes,]</code> ### Annotate genes</p>
+<p>In order to assess the percentage of mitochondrial UMIs, we will need to be able to identify mitochondrial genes. The simplest way to do this is to annotate the genes with their chromosome of origin.</p>
+<p>There are many ways we could annotate our genes in R. We will use AnnotationHub. <code>AnnotationHub</code> has access to a large number of annotation databases. Our genes are currently annotated with Ensembl IDs, so we will use Ensembl human database. We will also specify that we want the database corresponding to Ensembl release 107 as this the release from which the CellRanger gene annotation was generated.</p>
+<p>!!! r-project “code”</p>
+<pre><code>-  Running following command for the first time will prompt the question `/home/$USER/.cache/R/AnnotationHub does not exist, create directory? (yes/no):` . Reply `yes` to it 
+
+```r
+ah &lt;- AnnotationHub()
+```
+```r
+ens.hs.107&lt;- query(ah, c("Homo sapiens", "EnsDb", 107))[[1]] 
+
+genes &lt;- rowData(sce)$ID
+gene_annot &lt;- AnnotationDbi::select(ens.hs.107, 
+                                    keys = genes,
+                                    keytype = "GENEID",
+                                    columns = c("GENEID", "SEQNAME")) %&gt;%
+    set_names(c("ID", "Chromosome"))
+rowData(sce) &lt;- merge(rowData(sce), gene_annot, by = "ID", sort=FALSE)
+rownames(rowData(sce)) &lt;- rowData(sce)$ID
+
+rowData(sce)
+```</code></pre>
+</section>
+<section id="add-per-cell-qc-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="add-per-cell-qc-metrics">Add per cell QC metrics</h3>
+<p>We can now add per cell QC metrics to the droplet annotation using the function addPerCellQC. In order to get the metrics for the subset of mitochondrial genes, we need to pass the function a vector indicating which genes are mitochondrial.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+is.mito &lt;- which(rowData(sce)$Chromosome=="MT")
+sce &lt;- addPerCellQC(sce, subsets=list(Mito=is.mito), BPPARAM = SerialParam())
+colData(sce)
+```</code></pre>
+<p>!!! info “Info”</p>
+<pre><code>The function has added six columns to the droplet annotation:
+
+- **sum**: total UMI count
+- **detected:** number of features (genes) detected
+- **subsets_Mito_sum:** number of UMIs mapped to mitochondrial transcripts
+- **subsets_Mito_detected:** number of mitochondrial genes detected
+- **subsets_Mito_percent:** percentage of UMIs mapped to mitochondrial transcripts
+- **total:** also the total UMI count
+
+We will use sum, detected, and subsets_Mito_percent to further filter the cells.</code></pre>
+</section>
+<section id="qc-metric-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="qc-metric-distribution">QC metric distribution</h3>
+<p>Before moving on to do the actual cell filtering, it is always a good idea to explore the distribution of the metrics across the droplets.</p>
+<p>We can use the <code>scater</code> function <code>plotColData</code> to generate plots that provide a look at these distributions on a per sample basis.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+plotColData(sce, x="SampleName", y="sum") + 
+    scale_y_log10() + 
+    ggtitle("Total count")
+```
+![image](../r_images/4-qc-metric-dis-total-count.png){width="600"}
+
+```r 
+plotColData(sce, x="SampleName", y="detected") + 
+scale_y_log10() + 
+ggtitle("Detected features")
+```
+![image](../r_images/5-qc-metric-dist-detected-features.png){width="600"}
+
+```r
+plotColData(sce, x="SampleName", y="subsets_Mito_percent") + 
+ggtitle("Mito percent")
+```
+
+![image](../r_images/6-qc-mtertic-dist-mito-percent.png){width="600"}
+
+A scatter plot shows the extent to which library size and numbers of genes detected are correlated.
+
+```r
+colData(sce) %&gt;% 
+    as.data.frame() %&gt;% 
+    arrange(subsets_Mito_percent) %&gt;% 
+    ggplot(aes(x = sum, y = detected)) +
+    geom_point(aes(colour = subsets_Mito_percent &gt; 10)) + 
+    facet_wrap(vars(SampleGroup))
+```
+![image](../r_images/7-qc-mtertic-dist-subset-mite-percent.png){width="600"}</code></pre>
+</section>
+<section id="identification-of-low-quality-cells-with-adaptive-thresholds" class="level3">
+<h3 class="anchored" data-anchor-id="identification-of-low-quality-cells-with-adaptive-thresholds">Identification of low-quality cells with adaptive thresholds</h3>
+<p>One could use hard threshold for the library size, number of genes detected and mitochondrial content based on the distributions seen above. These would need vary across runs and the decision making process is somewhat arbitrary. It may therefore be preferable to rely on outlier detection to identify cells that markedly differ from most cells.</p>
+<p>We saw above that the distribution of the QC metrics is close to Normal. Hence, we can detect outliers using the median and the <a href="https://en.wikipedia.org/wiki/Median_absolute_deviation">median absolute deviation (MAD) from the median</a> (not the mean and the standard deviation which both are sensitive to outliers).</p>
+<p>For a given metric, an outlier value is one that lies over some number of MADs away from the median. A cell will be excluded if it is an outlier in the part of the range to avoid, for example low gene counts, or high mitochondrial content. For a normal distribution, a threshold defined with a distance of 3 MADs from the median retains about 99% of values.</p>
+<p>The <code>scater</code> function <code>isOutlier</code> can be used to detect outlier cells based on any metric in the <code>colData</code> table. It returns a boolean vector that identifies outliers. By default it will mark any cell that is 3 MADS in either direction from the median as an outlier.</p>
+<section id="library-size" class="level4">
+<h4 class="anchored" data-anchor-id="library-size">Library size</h4>
+<p>With library size we wish to identify outliers that have very low library sizes, this indicates that the droplets either contain poor quality cells, perhaps damaged or dying, or do not contain a cell at all.</p>
+<p>The library size distribution tends to have a long tail to the right (small numbers of cells with very high UMI counts). We therefore log transform the library size in order to the make the distribution closer to normal. This also improves the resolution of the smaller library sizes and ensures that we do not end up with negative threshold.</p>
+<p>!!! r-project “code” <code>r     low_lib_size &lt;- isOutlier(sce$sum, log=TRUE, type="lower")     table(low_lib_size)</code></p>
+<pre><code>- This has excluded 0 cells. We can view the threshold values to check that they seem reasonable.
+```r
+attr(low_lib_size, "thresholds")
+```
+
+- We can view the effect of the filtering using `plotColData`.
+```r
+colData(sce)$low_lib_size &lt;- low_lib_size
+plotColData(sce, x="SampleName", y="sum", colour_by = "low_lib_size") + 
+    scale_y_log10() + 
+    labs(y = "Total count", title = "Total count") +
+    guides(colour=guide_legend(title="Discarded"))
+```
+![image](../r_images/8-ident-low-quality-library-size.png){width="600"}</code></pre>
+</section>
+<section id="number-of-genes" class="level4">
+<h4 class="anchored" data-anchor-id="number-of-genes">Number of genes</h4>
+<p>As with the library size, we will log tranform the number of genes detected prior to filtering using the median absolute deviation.</p>
+<p>!!! r-project “code” <code>r     low_n_features &lt;- isOutlier(sce$detected, log=TRUE, type="lower")     table(low_n_features)</code></p>
+<pre><code>- This has excluded out 173 cells. The threshold value was:
+```r
+attr(low_n_features, "thresholds")[1]
+```
+
+- We can view the effect of the filtering using plotColData.
+```r
+colData(sce)$low_n_features &lt;- low_n_features
+plotColData(sce, x="SampleName", y="detected", colour_by = "low_n_features") + 
+    scale_y_log10() + 
+    labs(y = "Genes detected", title = "Genes detected") +
+    guides(colour=guide_legend(title="Discarded"))
+```
+
+![image](../r_images/9-ident-low-quality-number-of-genes.png){width="600"}</code></pre>
+</section>
+<section id="mitochondrial-content" class="level4">
+<h4 class="anchored" data-anchor-id="mitochondrial-content">Mitochondrial content</h4>
+<p>For the mitochondrial content the exclusion zone is in the higher part of the distribution. For this reason we do not need to worry about log transforming the data as want to remove the long right hand tail anyway.</p>
+<p>!!! r-project “code” <code>r     high_Mito_percent &lt;- isOutlier(sce$subsets_Mito_percent, type="higher")     table(high_Mito_percent)</code></p>
+<pre><code>- This has removed 1720 cells in total. The upper threshold value:
+```r
+attr(high_Mito_percent, "thresholds")[2]
+```
+
+- We can view the effect of the filtering using plotColData.
+```r
+colData(sce)$high_Mito_percent &lt;- high_Mito_percent
+plotColData(sce,
+            x="SampleName",
+            y="subsets_Mito_percent",
+            colour_by = "high_Mito_percent") + 
+    labs(y = "Percentage mitochondrial UMIs",
+         title = "Mitochondrial UMIs") +
+    guides(colour=guide_legend(title="Discarded"))
+```
+![image](../r_images/10-ident-low-quality-mitochondrial-umis.png){width="600"}</code></pre>
+</section>
+<section id="summary-of-discarded-cells" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-discarded-cells">Summary of discarded cells</h4>
+<p>Having applied each of the three thresholds separately, we can now combine them to see how many droplets in total we will be excluding.</p>
+<p>!!! r-project “code” <code>r     tibble(low_lib_size, low_n_features, high_Mito_percent) %&gt;%       mutate(discard = low_lib_size | low_n_features | high_Mito_percent) %&gt;%        mutate(SampleName=colData(sce)$SampleName) %&gt;%        group_by(SampleName)  %&gt;%       summarise(across(where(is.logical), sum))</code></p>
+</section>
+<section id="all-three-filter-steps-at-once" class="level4">
+<h4 class="anchored" data-anchor-id="all-three-filter-steps-at-once">All three filter steps at once</h4>
+<p>The three steps above may be run in one go using the quickPerCellQC function. This creates a DataFrame with 4 columns containing TRUE/FALSE - one for each filter metric and one called “discard” that combined the three logicals.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+cell_qc_results &lt;- quickPerCellQC(colData(sce), sub.fields = TRUE)
+```
+```r
+cell_qc_results %&gt;%
+  as.data.frame() %&gt;% 
+  mutate(SampleName=colData(sce)$SampleName) %&gt;% 
+  group_by(SampleName) %&gt;%
+  summarise(across(where(is.logical), sum))
+```</code></pre>
+</section>
+<section id="assumptions" class="level4">
+<h4 class="anchored" data-anchor-id="assumptions">Assumptions</h4>
+<p>Data quality depends on the tissue analysed, some being difficult to dissociate, e.g.&nbsp;brain, so that one level of QC stringency will not fit all data sets.</p>
+<p>Filtering based on QC metrics as done here assumes that these QC metrics are not correlated with biology. This may not necessarily be true in highly heterogenous data sets where some cell types represented by good-quality cells may have low RNA content or high mitochondrial content.</p>
+</section>
+<section id="considering-experimental-factors-when-filtering" class="level4">
+<h4 class="anchored" data-anchor-id="considering-experimental-factors-when-filtering">Considering experimental factors when filtering</h4>
+<p>The samples analysed here may have been processed in different batches leading to differences in the overall distribution of UMI counts, numbers of genes detected and mitochondrial content. Such differences would affect the adaptive thesholds discussed above - that is, as the distributions of the metrics differ, perhaps we should really apply the adaptive thresholding for each batch rather than universally across all samples. The `quickPerCellQC has a “batch” argument that allows us to specify with samples belong to which batches. The batches are then filtered independently.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+batch.cell_qc_results &lt;- quickPerCellQC(colData(sce), 
+                                         sub.fields = TRUE,
+                                         batch=sce$Sample)
+```
+```r
+batch.cell_qc_results %&gt;%
+  as.data.frame() %&gt;% 
+  mutate(SampleName=colData(sce)$SampleName) %&gt;% 
+  group_by(SampleName) %&gt;%
+  summarise(across(where(is.logical), sum))
+```</code></pre>
+<p>The table below shows how the thresholds for each metric differ between the batch-wise analysis and the analysis using all samples.</p>
+<p>!!! r-project “code”</p>
+<pre><code>```r
+all.thresholds &lt;- tibble(`SampleName`="All",
+                         `Library Size`=attr(cell_qc_results$low_lib_size, "thresholds")[1],
+                         `Genes detected`=attr(cell_qc_results$low_n_features, "thresholds")[1],
+                         `Mitochondrial UMIs`=attr(cell_qc_results$high_subsets_Mito_percent, "thresholds")[2])
+
+
+tibble(`Sample`=names(attr(batch.cell_qc_results$low_lib_size, "thresholds")[1,]),
+       `Library Size`=attr(batch.cell_qc_results$low_lib_size, "thresholds")[1,],
+       `Genes detected`=attr(batch.cell_qc_results$low_n_features, "thresholds")[1,],
+       `Mitochondrial UMIs`=attr(batch.cell_qc_results$high_subsets_Mito_percent, "thresholds")[2,]) %&gt;% 
+  left_join(samplesheet) %&gt;% 
+  select(SampleName, `Library Size`, `Genes detected`, `Mitochondrial UMIs`) %&gt;% 
+  bind_rows(all.thresholds) %&gt;% 
+  mutate(across(where(is.numeric), round, digits=2))
+```
+&lt;center&gt;
+
+|SampleName | Library Size | Genes detected | Mitochondrial UMIs|
+|:----------|:-------------|:---------------|:------------------|
+|ETV6-RUNX1_1|  1475.79    |1018.21         |9.56               |
+|HHD_1       |297.78       |318.38          |12.14              |
+|PRE-T_1     |252.52       |382.36          |6.24               |
+|PBMMC_1     |580.14       |496             |7.23               |
+|All         |373.1        |387.88          |11.14              |
+
+&lt;/center&gt;
+
+- Let’s replace the columns in the droplet annotation with these new filters.
+
+```r
+sce$low_lib_size &lt;- batch.cell_qc_results$low_lib_size
+sce$low_n_features &lt;- batch.cell_qc_results$low_n_features
+sce$high_Mito_percent &lt;- batch.cell_qc_results$high_subsets_Mito_percent
+sce$discard &lt;- batch.cell_qc_results$discard
+```
+
+- We can visualise how the new filters look using violin plots.
+```r
+plotColData(sce, x="SampleName", y="sum", colour_by = "low_lib_size") + 
+    scale_y_log10() + 
+    labs(y = "Total count", title = "Total count") +
+    guides(colour=guide_legend(title="Discarded"))
+```
+![image](../r_images/11-factors-filtering-total-count.png){width="600"}
+
+
+```r
+plotColData(sce, x="SampleName", y="detected", colour_by = "low_n_features") + 
+    scale_y_log10() + 
+    labs(y = "Genes detected", title = "Genes detected") +
+    guides(colour=guide_legend(title="Discarded"))
+```
+
+![image](../r_images/12-factors-filtering-genes-detected.png){width="600"}
+
+- There are some distinct differences, most noticeable is that some cells are now being filtered based on library size for both ETV6-RUNX1_1 and PBMMC_1a. The venn diagrams below show how the number of discarded droplets in have changed for each filter in comparison to when the MAD filtering was applied across all samples.
+
+```r
+pc1 &lt;- tibble(`All together`=cell_qc_results$low_lib_size, 
+              `By batch`=batch.cell_qc_results$low_lib_size) %&gt;% 
+           ggvenn(show_percentage = FALSE) +
+               labs(title="Library Size")
+
+pc2 &lt;- tibble(`All together`=cell_qc_results$low_n_features, 
+              `By batch`=batch.cell_qc_results$low_n_features) %&gt;% 
+           ggvenn(show_percentage = FALSE) +
+               labs(title="Genes detected")
+
+pc3 &lt;- tibble(`All together`=cell_qc_results$high_subsets_Mito_percent, 
+                 `By batch`=batch.cell_qc_results$high_subsets_Mito_percent) %&gt;% 
+           ggvenn(show_percentage = FALSE) +
+               labs(title="Mitochondrial UMIs")
+
+pc1 + pc2 + pc3
+```
+![image](../r_images/13-factors-filtering-venn-diagrams.png){width="600"}
+
+- The most striking difference is in the filtering by library size. As we can see from the violin plots ETV6-RUNX1_1 has a markedly different library size distribution to the other three samples. When we applied the adaptive filters across all samples, the lower distributions of the other three samples caused the MADs to be distorted and resulted in a threshold that was inappropriately low for the ETV6-RUNX1_1 samples.</code></pre>
+</section>
+</section>
+<section id="filtering-out-poor-quality-cells" class="level3">
+<h3 class="anchored" data-anchor-id="filtering-out-poor-quality-cells">Filtering out poor quality cells</h3>
+<p>Now that we have identified poor quality cells we can filter them out before proceeding to do any further analysis.</p>
+<p>!!! r-project “code” <code>r     sce.filtered &lt;- sce[, !sce$discard]</code> ## QC and filtering by combining the metrics</p>
+<p>In the previous approach we used the three metrics in isolation to filter droplets. Another approach is to combine the three (or more) metrics in a single filtering step by looking for outliers in the multi-dimensional space defined by the metrics.</p>
+<p>As with the adaptive thresholds above, this method should not be applied across batches or samples with differing distributions in the metrics or it will exclude many good quality cells. To demonstrate these methods, we’ll just extract one sample from our SingleCellExperiment object.</p>
+<p>!!! r-project “code” <code>r     sce.E1 &lt;- sce[ , sce$SampleName == "ETV6-RUNX1_1"]</code> ### Using “outlyingness”</p>
+<p>Essentially we need to reduce our 3 metrics to a single metric, we can then use isOutlier to select outliers based on this metric. One way to do this is to use the function adjOutlyingness from the robustbase package. This function computes the “outlyingness” for each droplet.</p>
+<p>Here we will use the same three metrics as before: library size, the number of genes detected and the mitochondrial content. Remember that for “sum” (total UMIs) and “detected” (number of genes detected), we want to use the log10 value.</p>
+<p>!!! r-project “code” ```r library(robustbase) stats &lt;- cbind(log10(sce.E1<span class="math inline">\(sum),  log10(sce.E1\)</span>detected), sce.E1$subsets_Mito_percent)</p>
+<pre><code>outlying &lt;- adjOutlyingness(stats, only.outlyingness = TRUE)
+multi.outlier &lt;- isOutlier(outlying, type = "higher")
+summary(multi.outlier)
+```</code></pre>
+</section>
+<section id="using-pca" class="level3">
+<h3 class="anchored" data-anchor-id="using-pca">Using PCA</h3>
+<p>Another approach is to perform a principal component analysis (PCA) on the table of metrics, apply <code>adjOutlyingness</code> to the metrics table and use this to detect outliers. The <code>scater</code> function <code>runColDataPCA</code> can be used to perform the PCA and detect outliers. We’ll need to add a couple of columns to the <code>colData</code> for the log10 metrics first.</p>
+<p>!!! r-project “code” <code>r     sce.E1$log10sum &lt;- log10(sce.E1$sum)     sce.E1$log10detected &lt;- log10(sce.E1$detected)     sce.E1 &lt;- runColDataPCA(sce.E1,                           variables=list("log10sum",                                          "log10detected",                                          "subsets_Mito_percent"),                          outliers=TRUE,                          BPPARAM = bp.params)</code></p>
+<pre><code>- This has added the results of the principal component analysis into a new slot in the SingleCellExperiment object specifically for holding the results of dimension reduction transformations such as PCA, t-SNE and UMAP. The results can be accessed using the `reducedDim` function.
+```r
+head(reducedDim(sce.E1))
+```
+- It has also added a column “outlier” to the `colData`, which specifies the droplets that have been identified as outliers.
+```r
+summary(sce.E1$outlier)
+```</code></pre>
+</section>
+<section id="a-note-on-multi-dimensional-filtering" class="level3">
+<h3 class="anchored" data-anchor-id="a-note-on-multi-dimensional-filtering">A note on multi-dimensional filtering</h3>
+<p>These types of approach can provide more power for detecting outliers as they are looking at patterns across multiple metrics, however, it can be difficult to interpret the reason why any particular droplet has been excluded.</p>
+</section>
+</section>
+<section id="mitochondrial-content-versus-library-size" class="level2">
+<h2 class="anchored" data-anchor-id="mitochondrial-content-versus-library-size">Mitochondrial content versus library size</h2>
+<p>A useful diagnostic plot for assessing the impact of the filtering is to do a scatter plot of the mitochondrial content against the library size. We can overlay our final filter metric using the point colour.</p>
+<p>!!! r-project “code” <code>r     plotColData(sce,                  x="sum",                  y="subsets_Mito_percent",                  other_fields="SampleName",                 colour_by="discard") +         facet_wrap(~SampleName, ncol=5, scale="free_x")</code></p>
+<pre><code>![image](../r_images/14-mitochondrial-content-vs-lib-size.png){width="600"}</code></pre>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
