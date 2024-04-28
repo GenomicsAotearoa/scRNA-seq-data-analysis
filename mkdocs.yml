@@ -112,6 +112,7 @@ plugins:
       zoomable: true
   - search:
       lang: en
+  - open-in-new-tab
 
 extra_javascript:
   - javascripts/mathjax.js
