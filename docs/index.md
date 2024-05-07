@@ -6,13 +6,6 @@
 ![image](./theme_images/theme-image.png){width="300"}
 </center>
 
-!!! database "Data set"
-
-    - Data used in this workshop is based on [CaronBourque2020](https://www.nature.com/articles/s41598-020-64929-x_) relating to pediatric leukemia, with four sample types, including:
-        - pediatric Bone Marrow Mononuclear Cells (PBMMCs)
-        - three tumour types: ETV6-RUNX1, HHD, PRE-T
-
-
 
 !!! check-to-slot "Prerequisites"
  
@@ -28,6 +21,13 @@
     - [ ] Attend [Genomics Data Carpentry](https://datacarpentry.org/genomics-workshop/),  [RNA-Seq Data Analysis](https://genomicsaotearoa.github.io/RNA-seq-workshop/), [Introduction to R](https://genomicsaotearoa.github.io/Introduction-to-R/) and/or [Intermediate R](https://genomicsaotearoa.github.io/Intermediate-R/)
 
 <br>
+
+!!! database "Data set"
+
+    - Data used in this workshop is based on [CaronBourque2020](https://www.nature.com/articles/s41598-020-64929-x_) relating to pediatric leukemia, with four sample types, including:
+        - pediatric Bone Marrow Mononuclear Cells (PBMMCs)
+        - three tumour types: ETV6-RUNX1, HHD, PRE-T
+
 
 !!! book-atlas "References"
 
