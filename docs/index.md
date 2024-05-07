@@ -28,6 +28,9 @@
         - pediatric Bone Marrow Mononuclear Cells (PBMMCs)
         - three tumour types: ETV6-RUNX1, HHD, PRE-T
 
+!!! tags "Attribution notice"
+
+
 
 !!! book-atlas "References"
 
