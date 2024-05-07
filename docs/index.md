@@ -2,6 +2,9 @@
 # Analysis of single cell RNA-seq data
 </center>
 
+<center>
+![image](./theme_images/theme-image.png){width="300"}
+</center>
 
 !!! database "Data set"
 
