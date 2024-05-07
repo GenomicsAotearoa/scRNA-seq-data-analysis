@@ -7,6 +7,19 @@
 </center>
 
 
+!!! calendar-days "Episodes"
+
+    1. [Alignment and feature counting with Cell Ranger](./episodes/1.md)
+    1. [QC and Exploratory Analysis](./episodes/2.md)
+    1. [Normalisation](./episodes/3.md)
+    1. [sctransform: Variance Stabilising Transformation](./episodes/4.md)
+    1. [Feature Selection and Dimensionality Reduction](./episodes/5.md)
+    1. [Batch correction and data set integration](./episodes/6.md)
+    1. [Clustering](./episodes/7.md)
+    1. [Identification of cluster marker genes](./episodes/8.md)
+    1. [Differential expression analysis](./episodes/9.1.md)
+    1. [ Differential Abundance](./episodes/9.2.md)
+
 !!! check-to-slot "Prerequisites"
  
     - [x] Inermediate level knowledge on R (programming language)
@@ -21,6 +34,9 @@
     - [ ] Attend [Genomics Data Carpentry](https://datacarpentry.org/genomics-workshop/),  [RNA-Seq Data Analysis](https://genomicsaotearoa.github.io/RNA-seq-workshop/), [Introduction to R](https://genomicsaotearoa.github.io/Introduction-to-R/) and/or [Intermediate R](https://genomicsaotearoa.github.io/Intermediate-R/)
 
 <br>
+
+
+
 
 !!! database "Data set"
 
