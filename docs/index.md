@@ -2,11 +2,6 @@
 # Analysis of single cell RNA-seq data
 </center>
 
-!!! circle-info "For Deverlopers"
-    - working directory `/nesi/project/nesi02659/sc-rna`
-    - Use `sc-RNA` ( OR long name  `sc-RNA/2023-07-gimkl-2022a-R-bundle-Bioconductor-3.15-R-4.2.1`) module which contains all of the required R packages  
-
-
 
 !!! database "Data set"
 
@@ -14,16 +9,6 @@
         - pediatric Bone Marrow Mononuclear Cells (PBMMCs)
         - three tumour types: ETV6-RUNX1, HHD, PRE-T
 
-## Workflow for **developers**
-
-!!! info ""
-
-<center>
-```mermaid
-flowchart TD
-    id1["Sequencing QC"] --> id2["Read alignment, Feature Counting, Cell calling"] --> id3["QC"] --> id4["Count normalisation"] --> id5["Feature selection"] --> id6["Dimensionality reduction"] --> id7["Data set integration"] --> id8["Clustering"] --> id9["Cluster marker genes"] --> id10["DE between conditions"] --> id11["Differential abundance between conditions"]
-```
-</center>
 
 
 !!! check-to-slot "Prerequisites"
