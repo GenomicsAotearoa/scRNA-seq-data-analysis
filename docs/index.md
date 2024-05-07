@@ -30,6 +30,10 @@
 
 !!! tags "Attribution notice"
 
+    * Material used in this workshop is based on folloowing repositories
+
+        - Introduction to single-cell RNA-seq data analysis - University of Cambridge https://bioinformatics-core-shared-training.github.io/SingleCell_RNASeq_Jan23/
+        - Analysis of single cell RNA-seq data - Welcome Sanger Institute https://www.singlecellcourse.org/
 
 
 !!! book-atlas "References"
