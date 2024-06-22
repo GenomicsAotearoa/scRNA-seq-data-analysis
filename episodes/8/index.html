@@ -1,0 +1,1167 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Genomics Aotearoa & NeSI">
+      
+      
+        <link rel="canonical" href="https://genomicsaotearoa.github.io/scRNA-seq-data-analysis/episodes/8/">
+      
+      
+        <link rel="prev" href="../7/">
+      
+      
+        <link rel="next" href="../9.1/">
+      
+      
+      <link rel="icon" href="../../theme_images/nesi_ga.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>8. Identification of cluster marker genes - Analysis of single cell RNA-seq data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Mukta";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#8-identification-of-cluster-marker-genes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+<!-- Custom Banner -->
+<div class="banner">
+    <p style="color:rgb(250, 246, 246); display:inline;font-size: 160%;">This repository is in the early stages of development (Beta Version)</p>
+</div>
+
+<!-- Original Header -->
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-header__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Analysis of single cell RNA-seq data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              8. Identification of cluster marker genes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-nav__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    Analysis of single cell RNA-seq data
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Episodes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Episodes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../0/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Alignment and feature counting with Cell Ranger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. QC and Exploratory Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Normalisation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. sctransform: Variance Stabilising Transformation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. Feature Selection and Dimensionality Reduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../6/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    6. Batch correction and data set integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../7/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    7. Clustering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    8. Identification of cluster marker genes
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    8. Identification of cluster marker genes
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#identifying-cluster-marker-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identifying cluster marker genes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identifying cluster marker genes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paiwise-cluster-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Paiwise Cluster Comparisons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heatmap-of-marker-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Heatmap of marker genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjusting-the-log-fold-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adjusting the log-fold change
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cell-type-labelling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cell Type Labelling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cell Type Labelling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manual Annotation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    9. Differential expression analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    10. Differential Abundance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#identifying-cluster-marker-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identifying cluster marker genes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identifying cluster marker genes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paiwise-cluster-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Paiwise Cluster Comparisons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heatmap-of-marker-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Heatmap of marker genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjusting-the-log-fold-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adjusting the log-fold change
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cell-type-labelling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cell Type Labelling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cell Type Labelling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manual Annotation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="8-identification-of-cluster-marker-genes">8. Identification of cluster marker genes<a class="headerlink" href="#8-identification-of-cluster-marker-genes" title="Permanent link">&para;</a></h1>
+<p>In order to aid the interpretation of the clustering results that we covered in the previous section, it is helpful to identify genes that contribute to the separation of cells into those clusters.</p>
+<p>The main approach to achieve this, is to identify genes that are differently expressed between clusters. These may be, for example, exclusively expressed in a single cluster or perhaps differentiate between a few different clusters. There are different methods to identify expression differences between clusters: using mean expression level, or the ranking of the gene by its expression, or the proportions of cells that express the gene.</p>
+<p>Our main objective in this section is to cover some of the methods that can be used to achieve this goal, and obtain a summary table of results</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">Setup</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">library</span><span class="p">(</span><span class="n">scater</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nf">library</span><span class="p">(</span><span class="n">scran</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nf">library</span><span class="p">(</span><span class="n">patchwork</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>We will use the data set generated in the clustering session. This contains 7 samples from the Caron data set. For the purposes of these materials, in the interests of time, each sample has been downsampled to only contain 500 cells.</li>
+<li>read single cell object</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;R_objects/Caron_clustered.500.rds&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nf">rownames</span><span class="p">(</span><span class="n">sce</span><span class="p">)[</span><span class="m">11</span><span class="o">:</span><span class="m">20</span><span class="p">]</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nf">all</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">k.25_cluster.fun.leiden</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">label</span><span class="p">)</span>
+</code></pre></div></p>
+<ul>
+<li>
+<p>To remind ourselves, we can visualise the clusters on a UMAP:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UMAP_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/70-clustermarker-UMAP-corrected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/70-clustermarker-UMAP-corrected.png" width="400" /></a></center></p>
+</li>
+<li>
+<p>Our objective is to identify genes that distinguish these clusters from one another - “cluster marker genes”. Intuitively we hope that the clusters relate to specific cell populations, and therefore we are trying to find genes that will allow us to identify the cell types for each cluster.</p>
+</li>
+<li>
+<p>For example genes such as the “CST3” gene, which is a known monocyte marker:</p>
+</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UMAP_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;CST3&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">               </span><span class="n">by_exprs_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;reconstructed&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">               </span><span class="n">add_legend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/71-clustermarker-UMAPcorrected-2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/71-clustermarker-UMAPcorrected-2.png" width="400" /></a></center></p>
+</div>
+<h2 id="identifying-cluster-marker-genes">Identifying cluster marker genes<a class="headerlink" href="#identifying-cluster-marker-genes" title="Permanent link">&para;</a></h2>
+<p>Although we have defined our clusters based on the batch-corrected expression values, these should not be used for for gene-based analyses like marker gene detection. Instead, we should <strong>use the uncorrected (normalised) expression values for differential expression between clusters</strong>. This is because data integration algorithms bring cells together based on their overall gene expression, but for each gene individually the data transformation may introduce artificial agreement between batches, which is not ideal for gene-level differential analysis. Furthermore, the severity of these biases is dependent on the parameters used for data integration (such as the number of nearest neighbours in the `fastMNN()`` method).</p>
+<p>Valid assays to use in gene based differential analysis tests are the normalised counts obtained from the deconvolution method (using <code>scuttle::computePooledFactors() + scuttle::logNormCounts()</code>) or from the variance stabilising transformation method (using <code>sctransform::vst()</code>. In our SCE object, we have the normalised counts in the “logcounts” assay, which we can access with <code>assay(sce, "logcounts")</code> (or by using the shortcut <code>logcounts(sce)</code>).</p>
+<h3 id="paiwise-cluster-comparisons">Paiwise Cluster Comparisons<a class="headerlink" href="#paiwise-cluster-comparisons" title="Permanent link">&para;</a></h3>
+<p>The basic approach for marker gene identification across clusters is to perform statistical tests for each gene between every pair of clusters. The scoreMarkers() function can do this for us, while accounting for known factors (aka “blocking factors” or “blocks”), such as sample batch.</p>
+<p>The <code>scoreMarkers()</code> function outputs a list of DataFrame objects, one for each cluster compared to all others. However, note that the blocking assumes that each pair of clusters is present in at least one of the blocks. If there are two clusters which are not both present in at least one block (in our case Samples), then that pairwise comparison will by necessity be omitted.</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">By default the <code>scoreMarkers()</code> function will use the log-normalised counts as stored in the “logcounts” assay slot of the single cell object, so there is no need for us to specify it.</p>
+<ul>
+<li>calculate pairwise marker gene statistics</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">markers</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">scoreMarkers</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">                        </span><span class="n">groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">label</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">                        </span><span class="n">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span>
+</code></pre></div>
+<p>The returned object is a list of the same length as the number of clusters. We can access the results for a particular cluster thus:</p>
+<ul>
+<li>extract results for cluster 11</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">c11_markers</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">markers</span><span class="p">[[</span><span class="s">&quot;11&quot;</span><span class="p">]])</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nf">head</span><span class="p">(</span><span class="n">c11_markers</span><span class="p">)</span>
+</code></pre></div>
+<details class="circle-info">
+<summary>This DataFrame contains the results for cluster 10. The first four columns contain summary statistics:</summary>
+<ul>
+<li><strong>self.average</strong> - the mean log-expression in the cluster of interest</li>
+<li><strong>other.average</strong> - the grand mean across all other clusters</li>
+<li><strong>self.detected</strong> - the proportion of cells with detected expression in the cluster of interest</li>
+<li><strong>other.detected</strong> - the mean detected proportion across all other clusters.</li>
+</ul>
+</details>
+<details class="circle-info">
+<summary>The remaining columns contain summaries of three scores from the pairwise comparisons. The three scores are:</summary>
+<ul>
+<li><strong>logFC.cohen</strong> - “Cohen’s d” - this is the log fold change of mean gene expression standardized by the average standard deviation across the groups. This can be interpreted in a similar way to log fold change in that a positive value indicates upregulation in the cluster of interest.</li>
+<li><strong>AUC</strong> - “Area Under the Curve” - this quantifies the ability to distinguish between two gene expression distributions. It can be interpreted as the likelihood that any random cell in the cluster of interest will have a higher expression of the gene than any random cell in the other cluster. It ranges from 0 to 1, where 1 can be interpreted as upregulation, 0 downregulation, and 0.5 as no difference.</li>
+<li><strong>logFC.detected</strong> - this is the log fold change in the proportion of cells in which the gene is detected in the cluster of interest, versus the proportion of cells in which the gene is detected in the other cluster. Positive values indicate that the gene is detected in more cells in the cluster of interest than the other cluster. Note, this takes no account of the magnitude of the gene expression, instead this metric helps to identify presence/absence differences in gene expression between clusters.</li>
+</ul>
+</details>
+</div>
+<h3 id="heatmap-of-marker-genes">Heatmap of marker genes<a class="headerlink" href="#heatmap-of-marker-genes" title="Permanent link">&para;</a></h3>
+<p>We have already seen how we can use the plotExpression() function to visualise the distribution of expression in our data between clusters. We have also seen how to use plotReducedDim() to visualise a gene’s expression on the projected reduced dimensionality space.</p>
+<p>Another useful type of visualisation is to use heatmaps to show the expression of these genes of interest. We will demonstrate this using the top marker genes for cluster 11.</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">Get top-ranked markers for cluster 11</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">c11_top_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">c11_markers</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nf">filter</span><span class="p">(</span><span class="n">rank.logFC.cohen</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="m">5</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nf">rownames</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Visualise their expression as a heatmap</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nf">plotHeatmap</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">            </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c11_top_genes</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">            </span><span class="n">order_columns_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">))</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/72-clustermarker-expressionheatmap.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/72-clustermarker-expressionheatmap.png" width="500" /></a></center></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Alternatively, we can summarise the expression across sample goups and generate a heatmap showing the average expression across cells within each group using the function plotGroupedHeatmap(). We can specify any factors causing batch effects using the block arguments and the batch effects will be regressed out of the averages.</p>
+<ul>
+<li>heatmap average per group (cluster)</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nf">plotGroupedHeatmap</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">                   </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c11_top_genes</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">                   </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">                   </span><span class="n">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/73-clustermarker-heatmap-avg-pergroup.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/73-clustermarker-heatmap-avg-pergroup.png" width="400" /></a></center></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">In both cases, the colour scale of expression is showing the logcounts in their original scale. However, for this kind of visualisation, it may sometimes be useful to scale the data (aka Z-score), which brings all the genes to the same relative scale.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># scaled heatmap (z-scores)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nf">plotHeatmap</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">            </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c11_top_genes</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">            </span><span class="n">order_columns_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">),</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">            </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">            </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">            </span><span class="n">zlim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-3</span><span class="p">,</span><span class="w"> </span><span class="m">3</span><span class="p">))</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/74-clustermarker-scaledheatmap.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/74-clustermarker-scaledheatmap.png" width="500" /></a></center></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nf">plotGroupedHeatmap</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">                   </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c11_top_genes</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">                   </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">                   </span><span class="n">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">                   </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">                   </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">                   </span><span class="n">zlim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-3</span><span class="p">,</span><span class="w"> </span><span class="m">3</span><span class="p">))</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/75-clustermarker-group-heatmap.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/75-clustermarker-group-heatmap.png" width="500" /></a></center></p>
+</div>
+<p>In this case, the colour scale can be interpreted as the number of standard deviations above/below the mean of that gene across all cells.</p>
+<p>Another useful visualisation is to use dot plots of expression that show both the average gene expression (as a colour scale) and the number of cells in which the gene is detected (as the size of the points).
+We can generate such a plot using the plotDots() function:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># dot plot of expression showing average expression and detection rate</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nf">plotDots</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">         </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c11_top_genes</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">         </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">         </span><span class="n">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">         </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">zlim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-3</span><span class="p">,</span><span class="w"> </span><span class="m">3</span><span class="p">))</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/76-clustermarker-dotplot-of-expression.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/76-clustermarker-dotplot-of-expression.png" width="600" /></a></center></p>
+</div>
+<h3 id="adjusting-the-log-fold-change">Adjusting the log-fold change<a class="headerlink" href="#adjusting-the-log-fold-change" title="Permanent link">&para;</a></h3>
+<p>The AUC and Cohen’s d scores incorporate both the gene expression differences between the clusters and the variance in gene expression scores within each cluster. If a gene has low variance, it is possible that it will be ranked highly even if the magnitude of the difference between the clusters is low. These genes will not necessarily make good marker genes. It may therefore be desirable to favour the detection of genes with larger log-fold changes.</p>
+<p>For example, in the results from cluster 11, the gene SNX10 had a min-rank for Cohen’s d of 5:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">c11_markers</span><span class="p">[</span><span class="s">&quot;SNX10&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="n">dplyr</span><span class="o">::</span><span class="nf">select</span><span class="p">(</span><span class="n">min.logFC.cohen</span><span class="p">,</span><span class="w"> </span><span class="n">max.logFC.cohen</span><span class="p">,</span><span class="w"> </span><span class="n">rank.logFC.cohen</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">However, we can also see that its LFC goes from 0.3 to 7, which is a large range. Looking at its expression, we can see what might be going on:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nf">plotExpression</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">               </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SNX10&quot;</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">               </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/77-clustermarker-adjusting-log-fold.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/77-clustermarker-adjusting-log-fold.png" width="500" /></a></center></p>
+</div>
+<p>This gene has very low variation in expression in some clusters (because it’s lowly detected), and because Cohen’s d measures average differences scaled by variance, the gene comes up as having a high value for that metric in some comparisons.</p>
+<p>To make our analysis more restrictive, we can instead indicate to the <code>scoreMarkers()</code> function what is the minimum LFC threshold we want to use to consider a gene for ranking. For example, a LFC &gt; 2:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># score markers with LFC threshold of 2</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">markers_lfc</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">scoreMarkers</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">                           </span><span class="n">groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">label</span><span class="p">,</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">                           </span><span class="n">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">SampleName</span><span class="p">,</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">                           </span><span class="n">lfc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># extract new results for cluster 11</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">c11_markers_lfc2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">markers_lfc</span><span class="p">[[</span><span class="s">&quot;11&quot;</span><span class="p">]])</span>
+</code></pre></div>
+<ul>
+<li>Now, SNX10’s rank dropped substantially:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">c11_markers_lfc2</span><span class="p">[</span><span class="s">&quot;SNX10&quot;</span><span class="p">,</span><span class="w">  </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;rank.logFC.cohen&quot;</span><span class="p">)]</span>
+</code></pre></div>
+</div>
+<h2 id="cell-type-labelling">Cell Type Labelling<a class="headerlink" href="#cell-type-labelling" title="Permanent link">&para;</a></h2>
+<p>One of the main tasks we often want to perform is annotating our cells as known types of cells ocurring in our sampled tissue. This requires prior knowledge of cell transcriptomic states and therefore becomes easier if there are well-curated resources available. However, for less well-studied tissues these may not be available and so cell type annotation may rely on “manual annotation” using a small set of genes with known cell-specific expression (e.g. from microscopy data, qPCR on cell-sorted samples, etc.).</p>
+<p>In this section we will do a very simple manual labelling of our clusters, based on known genes expressed in different blood cell types. However, there are more systematic methods for cell type annotation, in particular when prior information is available for those cells:</p>
+<ul>
+<li>The <code>SingleR</code> package uses previously labelled bulk or single-cell datasets to annotate a new dataset.</li>
+<li>The <code>AUCcell</code> package classifies cells into types based on user-provided lists of “signature” genes for each type. These lists can be generated from literature, or also be based on prior RNA-seq datasets.</li>
+<li>Another strategy is to perform a standard gene set enrichment analysis on the top marker genes for each cluster.</li>
+</ul>
+<h3 id="manual-annotation">Manual Annotation<a class="headerlink" href="#manual-annotation" title="Permanent link">&para;</a></h3>
+<p>A lot is known about immune cell markers, in particular as many surface markers have been identified as useful for <a href="https://en.m.wikipedia.org/wiki/Cluster_of_differentiation#Immunophenotyping">immunophenotyping</a>.</p>
+<p>To help us in our annotation, we start by retrieving the top-ranked genes from each cluster into a list. We do this by looping through the list using the lapply() function and in each case picking the genes with rank &lt; 10 for Cohen’s D statistic:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># loop through list of marker genes and extract top-ranked gene names</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">top_markers_all</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">lapply</span><span class="p">(</span><span class="n">markers</span><span class="p">,</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">){</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span><span class="n">x</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="nf">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="nf">filter</span><span class="p">(</span><span class="n">rank.logFC.cohen</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">10</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span><span class="nf">rownames</span><span class="p">()</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="p">})</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="c1"># examining this list reveals several known markers of immune cells</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">top_markers_all</span>
+</code></pre></div>
+<ul>
+<li>Let’s visualise these markers’ expression in our clusters:</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># cell type specific genes</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">known_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span><span class="s">&quot;HBA1&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1"># erythrocytes</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span><span class="s">&quot;CST3&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1"># monocytes</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span><span class="s">&quot;CD3E&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1"># T cells</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">  </span><span class="s">&quot;NKG7&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1"># NK T cells</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">  </span><span class="s">&quot;CD79A&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1"># B cells</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">  </span><span class="s">&quot;MS4A1&quot;</span><span class="w"> </span><span class="c1"># CD20 B cells</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">  </span><span class="p">)</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="c1"># violin plot</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="nf">plotExpression</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">known_genes</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/78-clustermarker-markerexpression-visualise.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/78-clustermarker-markerexpression-visualise.png" width="600" /></a></center></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># scaled heatmap of expression</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nf">plotGroupedHeatmap</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">                   </span><span class="n">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">known_genes</span><span class="p">,</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">                   </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">                   </span><span class="n">block</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">                   </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">                   </span><span class="n">zlim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-3</span><span class="p">,</span><span class="w"> </span><span class="m">3</span><span class="p">))</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/79-clustermarker-scaledheatmap-of-expression.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/79-clustermarker-scaledheatmap-of-expression.png" width="500" /></a></center></p>
+<ul>
+<li>
+<p>Now that we have a more meaningful annotation for our clusters, let’s add this to our <code>SingleCellExperiment</code> object. We will also add the original cluster ID in parenthesis to remind ourselves that this annotation was done based on the clusters.</p>
+</li>
+<li>
+<p>The cell labels are stored in the <code>SingleCellExperiment</code> object as a factor (a type of object in R to store categorical data), and so we can change the labels using the <code>levels()</code> function, like so:</p>
+</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># re-label the cells - original cluster in parenthesis</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nf">levels</span><span class="p">(</span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce</span><span class="p">))</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;B (c1)&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;B (c2)&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">                            </span><span class="s">&quot;B (c3)&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;B (c4)&quot;</span><span class="p">,</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">                            </span><span class="s">&quot;CD20+ B (c5)&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">                            </span><span class="s">&quot;T (c6)&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;NK T (c7)&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">                            </span><span class="s">&quot;Erythrocytes (c8)&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Erythrocytes (c9)&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">                            </span><span class="s">&quot;Erythrocytes c(10)&quot;</span><span class="p">,</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">                            </span><span class="s">&quot;Monocytes (c11)&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;B (c12)&quot;</span><span class="p">)</span>
+</code></pre></div>
+- Now, when we label our UMAP, we can see the new labels, which are more intutitive to interpret:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># visualise UMAP with new labels</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UMAP_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/80-clustermarker-labelUMAP-ReducedDIM.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/80-clustermarker-labelUMAP-ReducedDIM.png" width="600" /></a></center></p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../7/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 7. Clustering">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                7. Clustering
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../9.1/" class="md-footer__link md-footer__link--next" aria-label="Next: 9. Differential expression analysis">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                9. Differential expression analysis
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Analysis of single cell RNA-seq data workshop material is licensed under a <a rel="noopener" target="_blank" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License v3.0</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

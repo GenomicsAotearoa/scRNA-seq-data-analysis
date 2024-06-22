@@ -1,0 +1,1979 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Genomics Aotearoa & NeSI">
+      
+      
+        <link rel="canonical" href="https://genomicsaotearoa.github.io/scRNA-seq-data-analysis/episodes/2/">
+      
+      
+        <link rel="prev" href="../1/">
+      
+      
+        <link rel="next" href="../3/">
+      
+      
+      <link rel="icon" href="../../theme_images/nesi_ga.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>2. QC and Exploratory Analysis - Analysis of single cell RNA-seq data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Mukta";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#2-qc-and-exploratory-analysis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+<!-- Custom Banner -->
+<div class="banner">
+    <p style="color:rgb(250, 246, 246); display:inline;font-size: 160%;">This repository is in the early stages of development (Beta Version)</p>
+</div>
+
+<!-- Original Header -->
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-header__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Analysis of single cell RNA-seq data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2. QC and Exploratory Analysis
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-nav__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    Analysis of single cell RNA-seq data
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Episodes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Episodes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../0/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Alignment and feature counting with Cell Ranger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    2. QC and Exploratory Analysis
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    2. QC and Exploratory Analysis
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-singlecellexperiment-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      The SingleCellExperiment object
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-counts-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      The counts matrix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#droplet-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Droplet annotation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties-of-scrna-seq-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties of scRNA-seq data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Properties of scRNA-seq data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#number-of-genes-detected-per-cell" class="md-nav__link">
+    <span class="md-ellipsis">
+      Number of genes detected per cell
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-umi-for-a-gene-versus-the-number-of-times-detected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Total UMI for a gene versus the number of times detected
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distribution-of-counts-for-a-gene-across-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Distribution of counts for a gene across cells
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality Control
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quality Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-multiple-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load multiple samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modify-the-droplet-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modify the droplet annotation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#undetected-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Undetected genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotate-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotate genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-per-cell-qc-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add per cell QC metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qc-metric-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      QC metric distribution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identification-of-low-quality-cells-with-adaptive-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identification of low-quality cells with adaptive thresholds
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identification of low-quality cells with adaptive thresholds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#library-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Library size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#number-of-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Number of genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitochondrial-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mitochondrial content
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-of-discarded-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary of discarded cells
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#all-three-filter-steps-at-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      All three filter steps at once
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assumptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#considering-experimental-factors-when-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Considering experimental factors when filtering
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-out-poor-quality-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filtering out poor quality cells
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qc-and-filtering-by-combining-the-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      QC and filtering by combining the metrics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="QC and filtering by combining the metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-outlyingness" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using “outlyingness”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-pca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using PCA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-note-on-multi-dimensional-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      A note on multi-dimensional filtering
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mitochondrial-content-versus-library-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mitochondrial content versus library size
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Normalisation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. sctransform: Variance Stabilising Transformation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. Feature Selection and Dimensionality Reduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../6/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    6. Batch correction and data set integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../7/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    7. Clustering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../8/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    8. Identification of cluster marker genes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    9. Differential expression analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    10. Differential Abundance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-singlecellexperiment-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      The SingleCellExperiment object
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-counts-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      The counts matrix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#droplet-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Droplet annotation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties-of-scrna-seq-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties of scRNA-seq data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Properties of scRNA-seq data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#number-of-genes-detected-per-cell" class="md-nav__link">
+    <span class="md-ellipsis">
+      Number of genes detected per cell
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-umi-for-a-gene-versus-the-number-of-times-detected" class="md-nav__link">
+    <span class="md-ellipsis">
+      Total UMI for a gene versus the number of times detected
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distribution-of-counts-for-a-gene-across-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Distribution of counts for a gene across cells
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality Control
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quality Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-multiple-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load multiple samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modify-the-droplet-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modify the droplet annotation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#undetected-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Undetected genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotate-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotate genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-per-cell-qc-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add per cell QC metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qc-metric-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      QC metric distribution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identification-of-low-quality-cells-with-adaptive-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Identification of low-quality cells with adaptive thresholds
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identification of low-quality cells with adaptive thresholds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#library-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Library size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#number-of-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Number of genes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitochondrial-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mitochondrial content
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-of-discarded-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary of discarded cells
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#all-three-filter-steps-at-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      All three filter steps at once
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assumptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#considering-experimental-factors-when-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Considering experimental factors when filtering
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-out-poor-quality-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filtering out poor quality cells
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qc-and-filtering-by-combining-the-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      QC and filtering by combining the metrics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="QC and filtering by combining the metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-outlyingness" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using “outlyingness”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-pca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using PCA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-note-on-multi-dimensional-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      A note on multi-dimensional filtering
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mitochondrial-content-versus-library-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mitochondrial content versus library size
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="2-qc-and-exploratory-analysis">2. QC and Exploratory Analysis<a class="headerlink" href="#2-qc-and-exploratory-analysis" title="Permanent link">&para;</a></h1>
+<p>Retrieve pre-made R code
+Open Terminal tab in RStudio and run:</p>
+<div class="admonition terminal">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>wget<span class="w"> </span>-c<span class="w"> </span>https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis/releases/download/2024-Apr/Scripts.zip
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>unzip<span class="w"> </span>Scripts.zip
+</code></pre></div>
+</div>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">library</span><span class="p">(</span><span class="n">DropletUtils</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nf">library</span><span class="p">(</span><span class="n">scater</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nf">library</span><span class="p">(</span><span class="n">ensembldb</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nf">library</span><span class="p">(</span><span class="n">AnnotationHub</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nf">library</span><span class="p">(</span><span class="n">BiocParallel</span><span class="p">)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nf">library</span><span class="p">(</span><span class="n">patchwork</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nf">library</span><span class="p">(</span><span class="n">ggvenn</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">samplesheet</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;Data/sample_sheet.tsv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s">&#39;\t&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>Here we are selecting to use forked processes with MulticoreParam and instructing the function to use 4 cores. </li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">bp.params</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">MulticoreParam</span><span class="p">(</span><span class="n">workers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">sample.path</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;Data/CellRanger_Outputs/SRR9264343/outs/filtered_feature_bc_matrix/&quot;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">sce.sing</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read10xCounts</span><span class="p">(</span><span class="n">sample.path</span><span class="p">,</span><span class="w"> </span><span class="n">col.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">BPPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bp.params</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">sce.sing</span>
+</code></pre></div></p>
+<details class="circle-check">
+<summary>Output</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>class:<span class="w"> </span>SingleCellExperiment<span class="w"> </span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>dim:<span class="w"> </span><span class="m">37764</span><span class="w"> </span><span class="m">3153</span><span class="w"> </span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>metadata<span class="o">(</span><span class="m">1</span><span class="o">)</span>:<span class="w"> </span>Samples
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>assays<span class="o">(</span><span class="m">1</span><span class="o">)</span>:<span class="w"> </span>counts
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>rownames<span class="o">(</span><span class="m">37764</span><span class="o">)</span>:<span class="w"> </span>ENSG00000243485<span class="w"> </span>ENSG00000237613<span class="w"> </span>...
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span>ENSG00000278817<span class="w"> </span>ENSG00000277196
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>rowData<span class="w"> </span>names<span class="o">(</span><span class="m">3</span><span class="o">)</span>:<span class="w"> </span>ID<span class="w"> </span>Symbol<span class="w"> </span>Type
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>colnames<span class="o">(</span><span class="m">3153</span><span class="o">)</span>:<span class="w"> </span>AAACCTGAGACTTTCG-1<span class="w"> </span>AAACCTGGTCTTCAAG-1<span class="w"> </span>...
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span>TTTGTCACAGGCTCAC-1<span class="w"> </span>TTTGTCAGTTCGGCAC-1
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>colData<span class="w"> </span>names<span class="o">(</span><span class="m">2</span><span class="o">)</span>:<span class="w"> </span>Sample<span class="w"> </span>Barcode
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>reducedDimNames<span class="o">(</span><span class="m">0</span><span class="o">)</span>:
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>mainExpName:<span class="w"> </span>NULL
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>altExpNames<span class="o">(</span><span class="m">0</span><span class="o">)</span>:
+</code></pre></div>
+</details>
+</div>
+<h3 id="the-singlecellexperiment-object">The SingleCellExperiment object<a class="headerlink" href="#the-singlecellexperiment-object" title="Permanent link">&para;</a></h3>
+<div class="admonition quote">
+<p>The data have been loaded as a <a href="https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html">SingleCellExperiment</a> object. The details of the structure of the object are described here. In summary, it stores various data types in a single object. Currently it will contain:</p>
+<ul>
+<li>the count matrix</li>
+<li>feature (gene) metadata</li>
+<li>cell (droplet) metadata</li>
+</ul>
+<p>Later we will also add the outcomes of downstream analysis such as normalisation and dimensionality reduction.</p>
+<p><a class="glightbox" href="../../r_images/single_cell_experiment.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/single_cell_experiment.png" /></a></p>
+</div>
+<h3 id="the-counts-matrix">The counts matrix<a class="headerlink" href="#the-counts-matrix" title="Permanent link">&para;</a></h3>
+<p>Compared to bulk RNA-seq, Single-cell RNA-seq data is sparse, i.e., there are many missing values or zeroes. This is particularly true with droplet-based methods such as 10X, mostly because:</p>
+<ul>
+<li>any given cell does not express each gene</li>
+<li>the library preparation does not capture all transcripts the cell was expressing</li>
+<li>the sequencing depth per cell is relatively low and not all expressed genes are detected</li>
+</ul>
+<p>We can access the counts matrix with the counts function. Given the large number of droplets in a sample, count matrices can be large.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nf">dim</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">))</span>
+</code></pre></div>
+<ul>
+<li>They are however very sparse, that is, most of the entries are 0’s. To save memory the counts can be stored in a ‘sparse matrix’ that only stores non-zero values, in this case as a dgCMatrix object.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)[</span><span class="m">1</span><span class="o">:</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="o">:</span><span class="m">10</span><span class="p">]</span>
+</code></pre></div></li>
+</ul>
+<details class="circle-check">
+<summary>Output</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="m">10</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="n">sparse</span><span class="w"> </span><span class="n">Matrix</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">class</span><span class="w"> </span><span class="s">&quot;dgCMatrix&quot;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="p">[[</span><span class="w"> </span><span class="n">suppressing</span><span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="n">column</span><span class="w"> </span><span class="n">names</span><span class="w"> </span><span class="s">&#39;AAACCTGAGACTTTCG-1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;AAACCTGGTCTTCAAG-1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;AAACCTGGTGCAACTT-1&#39;</span><span class="w"> </span><span class="kc">...</span><span class="w"> </span><span class="p">]]</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">ENSG00000243485</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">ENSG00000237613</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">ENSG00000186092</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">ENSG00000238009</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="n">ENSG00000239945</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="n">ENSG00000239906</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">ENSG00000241860</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="n">ENSG00000241599</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="n">ENSG00000286448</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="n">ENSG00000236601</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="n">.</span>
+</code></pre></div>
+</details>
+</div>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<p>Details about the “features” (in this case genes) can by accessed using the rowData function. Currently it contains the ensembl gene ID and the gene symbol, which have been derived from the 10x reference used by CellRanger. It also contains a “Type” column, which tells us what sort of data we are looking at; in this case it is “Gene Expression”. If we wish to, we can add further annotation to the features by adding extra columns to this data frame.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nf">rowData</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)</span>
+</code></pre></div>
+<details class="circle-check">
+<summary>Output - The rows of this table correspond to the rows of the count matrix; the row names of this table will match the row names of the counts matrix - currently these are the Ensembl IDS:</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">DataFrame</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="m">37764</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="n">columns</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">                             </span><span class="n">ID</span><span class="w">          </span><span class="n">Symbol</span><span class="w">            </span><span class="n">Type</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">                    </span><span class="o">&lt;</span><span class="n">character</span><span class="o">&gt;</span><span class="w">     </span><span class="o">&lt;</span><span class="n">character</span><span class="o">&gt;</span><span class="w">     </span><span class="o">&lt;</span><span class="n">character</span><span class="o">&gt;</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">ENSG00000243485</span><span class="w"> </span><span class="n">ENSG00000243485</span><span class="w">     </span><span class="n">MIR1302</span><span class="m">-2</span><span class="n">HG</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">ENSG00000237613</span><span class="w"> </span><span class="n">ENSG00000237613</span><span class="w">         </span><span class="n">FAM138A</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">ENSG00000186092</span><span class="w"> </span><span class="n">ENSG00000186092</span><span class="w">           </span><span class="n">OR4F5</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">ENSG00000238009</span><span class="w"> </span><span class="n">ENSG00000238009</span><span class="w"> </span><span class="n">ENSG00000238009</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">ENSG00000239945</span><span class="w"> </span><span class="n">ENSG00000239945</span><span class="w"> </span><span class="n">ENSG00000239945</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="kc">...</span><span class="w">                         </span><span class="kc">...</span><span class="w">             </span><span class="kc">...</span><span class="w">             </span><span class="kc">...</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="n">ENSG00000277836</span><span class="w"> </span><span class="n">ENSG00000277836</span><span class="w"> </span><span class="n">ENSG00000277836</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">ENSG00000278633</span><span class="w"> </span><span class="n">ENSG00000278633</span><span class="w"> </span><span class="n">ENSG00000278633</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">ENSG00000276017</span><span class="w"> </span><span class="n">ENSG00000276017</span><span class="w"> </span><span class="n">ENSG00000276017</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">ENSG00000278817</span><span class="w"> </span><span class="n">ENSG00000278817</span><span class="w"> </span><span class="n">ENSG00000278817</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="n">ENSG00000277196</span><span class="w"> </span><span class="n">ENSG00000277196</span><span class="w"> </span><span class="n">ENSG00000277196</span><span class="w"> </span><span class="n">Gene</span><span class="w"> </span><span class="n">Expression</span>
+</code></pre></div>
+</details>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nf">rownames</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">))[</span><span class="m">1</span><span class="o">:</span><span class="m">6</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<h3 id="droplet-annotation">Droplet annotation<a class="headerlink" href="#droplet-annotation" title="Permanent link">&para;</a></h3>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nf">colnames</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">))[</span><span class="m">1</span><span class="o">:</span><span class="m">6</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<h2 id="properties-of-scrna-seq-data">Properties of scRNA-seq data<a class="headerlink" href="#properties-of-scrna-seq-data" title="Permanent link">&para;</a></h2>
+<h3 id="number-of-genes-detected-per-cell">Number of genes detected per cell<a class="headerlink" href="#number-of-genes-detected-per-cell" title="Permanent link">&para;</a></h3>
+<p>The number and identity of genes detected in a cell varies greatly across cells: the total number of genes detected across all cells is far larger than the number of genes detected in each cell.</p>
+<p>For the current set of samples the total number of genes detected across cells was 26468 out of 37764 gene in the reference, but if we look at the number of genes detected in each cell, we can see that this ranges from 40 to 5547, with a median of 2562.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">genesPerCell</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colSums</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nf">plot</span><span class="p">(</span><span class="nf">density</span><span class="p">(</span><span class="n">genesPerCell</span><span class="p">),</span><span class="w"> </span><span class="n">main</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;Genes per cell&quot;</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/1-number_of_genes_per_cell.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image " src="../../r_images/1-number_of_genes_per_cell.png" width="600" /></a></p>
+</div>
+<h3 id="total-umi-for-a-gene-versus-the-number-of-times-detected">Total UMI for a gene versus the number of times detected<a class="headerlink" href="#total-umi-for-a-gene-versus-the-number-of-times-detected" title="Permanent link">&para;</a></h3>
+<p>If we compare the number of UMI’s assigned to an individual gene to the number of cells in which that gene is detected, we can see that highly expressed genes tend to be detected in a higher proportion of cells than lowly expressed genes. Remember that due to low sequencing depth, not all expressed genes are detected in a cell.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nf">plot</span><span class="p">(</span><span class="nf">rowSums</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nf">rowSums</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">     </span><span class="nf">rowMeans</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">     </span><span class="n">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;x&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">     </span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;Mean UMIs per cell&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">     </span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;proportion of cells expressing the gene&quot;</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/2-total-umi-gene-versus-number.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/2-total-umi-gene-versus-number.png" width="600" /></a></p>
+</div>
+<h3 id="distribution-of-counts-for-a-gene-across-cells">Distribution of counts for a gene across cells<a class="headerlink" href="#distribution-of-counts-for-a-gene-across-cells" title="Permanent link">&para;</a></h3>
+<p>We could also look at the distribution of counts for individual genes across all cells. The plot below shows this distribution for the top 20 genes detected.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">rel_expression</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">t</span><span class="p">(</span><span class="w"> </span><span class="nf">t</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nf">colSums</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">100</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nf">rownames</span><span class="p">(</span><span class="n">rel_expression</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce.sing</span><span class="p">)</span><span class="o">$</span><span class="n">Symbol</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">most_expressed</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sort</span><span class="p">(</span><span class="nf">rowSums</span><span class="p">(</span><span class="w"> </span><span class="n">rel_expression</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">decreasing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">T</span><span class="p">)[</span><span class="m">20</span><span class="o">:</span><span class="m">1</span><span class="p">]</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">plot_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.matrix</span><span class="p">(</span><span class="nf">t</span><span class="p">(</span><span class="n">rel_expression</span><span class="p">[</span><span class="nf">names</span><span class="p">(</span><span class="n">most_expressed</span><span class="p">),]))</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="nf">boxplot</span><span class="p">(</span><span class="n">plot_data</span><span class="p">,</span><span class="w"> </span><span class="n">cex</span><span class="o">=</span><span class="m">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">las</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;% total count per cell&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">horizontal</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</code></pre></div>
+<details class="circle-check">
+<summary>Output</summary>
+<p><a class="glightbox" href="../../r_images/3-distribution-of-counts-for-a-gene.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/3-distribution-of-counts-for-a-gene.png" /></a></p>
+</details>
+</div>
+<h2 id="quality-control">Quality Control<a class="headerlink" href="#quality-control" title="Permanent link">&para;</a></h2>
+<details class="circle-info">
+<summary>info</summary>
+<p>The cell calling performed by CellRanger does not always retain only droplets containing cells. Poor-quality cells, or rather droplets, may be caused by cell damage during dissociation or failed library preparation. They usually have low UMI counts, few genes detected and/or high mitochondrial content. The presence of these droplets in the data set may affect <em>normalisation</em>, assessment of <em>cell population heterogeneity</em>, and <em>clustering</em>:</p>
+<ul>
+<li><em>Normalisation:</em> Contaminating genes, ‘the ambient RNA’, are detected at low levels in all libraries. In low quality libraries with low RNA content, scaling will increase counts for these genes more than for better-quality cells, resulting in their apparent upregulation in these cells and increased variance overall.</li>
+<li><em>Cell population heterogeneity:</em> variance estimation and dimensionality reduction with PCA where the first principal component will be correlated with library size, rather than biology.</li>
+<li><em>Clustering:</em> higher mitochondrial and/or nuclear RNA content may cause low-quality cells to cluster separately or form states or trajectories between distinct cell types.</li>
+</ul>
+<p>In order to remove or reduce the impact of poor-quality droplets on our downstream analysis we will attempt to filter them out using some QC metrics. The three principle means of doing this are to apply thresholds for inclusion on three characteristics:</p>
+<ul>
+<li>
+<p>The library size defined as the total sum of UMI counts across all genes; cells with small library sizes are considered to be of low quality as the RNA has not been efficiently captured, i.e. converted into cDNA and amplified, during library preparation.</p>
+</li>
+<li>
+<p>The number of expressed genes in each cell defined as the number of genes with non-zero counts for that cell; any cell with very few expressed genes is likely to be of poor quality as the diverse transcript population has not been successfully captured.</p>
+</li>
+<li>
+<p>The proportion of UMIs mapped to genes in the mitochondrial genome; high proportions are indicative of poor-quality cells, possibly because of loss of cytoplasmic RNA from perforated cells (the reasoning is that mitochondria are larger than individual transcript molecules and less likely to escape through tears in the cell membrane).</p>
+</li>
+</ul>
+<p>The <a href="https://bioconductor.org/packages/3.11/bioc/html/scater.html">scater</a> function <code>addPerCellQC()</code> will compute various per droplet QC metrics and will add this information as new columns in the droplet annotation (<code>colData</code>) of the single cell object.</p>
+</details>
+<h3 id="load-multiple-samples">Load multiple samples<a class="headerlink" href="#load-multiple-samples" title="Permanent link">&para;</a></h3>
+<p>We can load multiple samples at the same time using the read10xCounts command. This will create a single object containing the data for multiple samples. We can then QC and filter the samples in conjunction. As we will see later, this is not always optimal when samples have been processed in multiple batches.</p>
+<p>As an example we will load one sample from each sample group. We will start with the filtered counts matrix from earlier, which only contains cells called by CellRanger. We pass the read10xCounts a named vector containing the paths to the filtered counts matrices that we wish to load; the names of the vector will be used as the sample names in the Single Cell Experiment object.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">samples</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">samplesheet</span><span class="o">$</span><span class="n">Sample</span><span class="p">[</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">7</span><span class="p">,</span><span class="m">9</span><span class="p">)]</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">list_of_files</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">str_c</span><span class="p">(</span><span class="s">&quot;Data/CellRanger_Outputs/&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">                       </span><span class="n">samples</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">                       </span><span class="s">&quot;/outs/filtered_feature_bc_matrix&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nf">names</span><span class="p">(</span><span class="n">list_of_files</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">samples</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">list_of_files</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read10xCounts</span><span class="p">(</span><span class="n">list_of_files</span><span class="p">,</span><span class="w"> </span><span class="n">col.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">BPPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bp.params</span><span class="p">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="n">sce</span>
+</code></pre></div>
+<details class="circle-check">
+<summary>Output</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>class:<span class="w"> </span>SingleCellExperiment<span class="w"> </span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>dim:<span class="w"> </span><span class="m">37764</span><span class="w"> </span><span class="m">14809</span><span class="w"> </span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>metadata<span class="o">(</span><span class="m">1</span><span class="o">)</span>:<span class="w"> </span>Samples
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>assays<span class="o">(</span><span class="m">1</span><span class="o">)</span>:<span class="w"> </span>counts
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>rownames<span class="o">(</span><span class="m">37764</span><span class="o">)</span>:<span class="w"> </span>ENSG00000243485<span class="w"> </span>ENSG00000237613<span class="w"> </span>...<span class="w"> </span>ENSG00000278817<span class="w"> </span>ENSG00000277196
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>rowData<span class="w"> </span>names<span class="o">(</span><span class="m">3</span><span class="o">)</span>:<span class="w"> </span>ID<span class="w"> </span>Symbol<span class="w"> </span>Type
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>colnames<span class="o">(</span><span class="m">14809</span><span class="o">)</span>:<span class="w"> </span>1_AAACCTGAGACTTTCG-1<span class="w"> </span>1_AAACCTGGTCTTCAAG-1<span class="w"> </span>...<span class="w"> </span>4_TTTGGTTAGGTGCTAG-1<span class="w"> </span>4_TTTGGTTGTGCATCTA-1
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>colData<span class="w"> </span>names<span class="o">(</span><span class="m">2</span><span class="o">)</span>:<span class="w"> </span>Sample<span class="w"> </span>Barcode
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>reducedDimNames<span class="o">(</span><span class="m">0</span><span class="o">)</span>:
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>mainExpName:<span class="w"> </span>NULL
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>altExpNames<span class="o">(</span><span class="m">0</span><span class="o">)</span>:
+</code></pre></div>
+</details>
+</div>
+<h3 id="modify-the-droplet-annotation">Modify the droplet annotation<a class="headerlink" href="#modify-the-droplet-annotation" title="Permanent link">&para;</a></h3>
+<p>Currently, the droplet annotation in <code>colData</code> slot of the <code>sce</code> object has two columns: “Sample” and “Barcode”. The “Sample” is the name of the sample as we provided it to <code>read10xCounts</code>, the “Barcode” is the barcode for the droplet (cell).</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<p>The “Barcode” column contains the cell/droplet barcode and comprises the actual sequence and a ‘group ID’, e.g. AAACCTGAGAAACCAT-1. The ‘group ID’ helps distinguish cells from different samples that have identical barcode sequences, however, as each sample was processed separately with CellRanger, the group ID is set to 1 in all data sets. In the rownames DropUtils has helpfully add a prefix to each barcode to distinguish between samples. We will replace the “Barcode” column with the these.</p>
+<p>We will also add information from the sample metadata table to the <code>colData</code> object. We will be using the merge function to do this. Unfortunately, this function removes the rownames from the DFrame, so we will need to replace them.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">Barcode</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">))</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">),</span><span class="w"> </span><span class="n">samplesheet</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="o">=</span><span class="s">&quot;Sample&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sort</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="nf">rownames</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">))</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">Barcode</span>
+</code></pre></div>
+</div>
+<h3 id="undetected-genes">Undetected genes<a class="headerlink" href="#undetected-genes" title="Permanent link">&para;</a></h3>
+<p>Although the count matrix has 37764 genes, many of these will not have been detected in any droplet.</p>
+<p>About a fifth of the genes have not been detected in any droplet. We can remove these before proceeding in order to reduce the size of the single cell experiment object.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">detected_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rowSums</span><span class="p">(</span><span class="nf">counts</span><span class="p">(</span><span class="n">sce</span><span class="p">))</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nf">table</span><span class="p">(</span><span class="n">detected_genes</span><span class="p">)</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce</span><span class="p">[</span><span class="n">detected_genes</span><span class="p">,]</span>
+</code></pre></div>
+</div>
+<h3 id="annotate-genes">Annotate genes<a class="headerlink" href="#annotate-genes" title="Permanent link">&para;</a></h3>
+<p>In order to assess the percentage of mitochondrial UMIs, we will need to be able to identify mitochondrial genes. The simplest way to do this is to annotate the genes with their chromosome of origin.</p>
+<p>There are many ways we could annotate our genes in R. We will use AnnotationHub. <code>AnnotationHub</code> has access to a large number of annotation databases. Our genes are currently annotated with Ensembl IDs, so we will use Ensembl human database. We will also specify that we want the database corresponding to Ensembl release 107 as this the release from which the CellRanger gene annotation was generated.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<ul>
+<li>Running following command for the first time will prompt the question <code>/home/$USER/.cache/R/AnnotationHub does not exist, create directory? (yes/no):</code> . Reply <code>yes</code> to it </li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">ah</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">AnnotationHub</span><span class="p">()</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">ens.hs.107</span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="n">ah</span><span class="p">,</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;Homo sapiens&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;EnsDb&quot;</span><span class="p">,</span><span class="w"> </span><span class="m">107</span><span class="p">))[[</span><span class="m">1</span><span class="p">]]</span><span class="w"> </span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">ID</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">gene_annot</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">AnnotationDbi</span><span class="o">::</span><span class="nf">select</span><span class="p">(</span><span class="n">ens.hs.107</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">                                    </span><span class="n">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">genes</span><span class="p">,</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">                                    </span><span class="n">keytype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;GENEID&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">                                    </span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;GENEID&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SEQNAME&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">    </span><span class="nf">set_names</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;ID&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Chromosome&quot;</span><span class="p">))</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">),</span><span class="w"> </span><span class="n">gene_annot</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ID&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sort</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="nf">rownames</span><span class="p">(</span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">))</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">ID</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span>
+</code></pre></div></p>
+</div>
+<h3 id="add-per-cell-qc-metrics">Add per cell QC metrics<a class="headerlink" href="#add-per-cell-qc-metrics" title="Permanent link">&para;</a></h3>
+<p>We can now add per cell QC metrics to the droplet annotation using the function addPerCellQC. In order to get the metrics for the subset of mitochondrial genes, we need to pass the function a vector indicating which genes are mitochondrial.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">is.mito</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">which</span><span class="p">(</span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">Chromosome</span><span class="o">==</span><span class="s">&quot;MT&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">addPerCellQC</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">subsets</span><span class="o">=</span><span class="nf">list</span><span class="p">(</span><span class="n">Mito</span><span class="o">=</span><span class="n">is.mito</span><span class="p">),</span><span class="w"> </span><span class="n">BPPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SerialParam</span><span class="p">())</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>The function has added six columns to the droplet annotation:</p>
+<ul>
+<li><strong>sum</strong>: total UMI count</li>
+<li><strong>detected:</strong> number of features (genes) detected</li>
+<li><strong>subsets_Mito_sum:</strong> number of UMIs mapped to mitochondrial transcripts</li>
+<li><strong>subsets_Mito_detected:</strong> number of mitochondrial genes detected</li>
+<li><strong>subsets_Mito_percent:</strong> percentage of UMIs mapped to mitochondrial transcripts</li>
+<li><strong>total:</strong> also the total UMI count</li>
+</ul>
+<p>We will use sum, detected, and subsets_Mito_percent to further filter the cells.</p>
+</div>
+<h3 id="qc-metric-distribution">QC metric distribution<a class="headerlink" href="#qc-metric-distribution" title="Permanent link">&para;</a></h3>
+<p>Before moving on to do the actual cell filtering, it is always a good idea to explore the distribution of the metrics across the droplets.</p>
+<p>We can use the <code>scater</code> function <code>plotColData</code> to generate plots that provide a look at these distributions on a per sample basis.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;sum&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span><span class="nf">scale_y_log10</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span><span class="nf">ggtitle</span><span class="p">(</span><span class="s">&quot;Total count&quot;</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/4-qc-metric-dis-total-count.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/4-qc-metric-dis-total-count.png" width="600" /></a></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;detected&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="nf">scale_y_log10</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="nf">ggtitle</span><span class="p">(</span><span class="s">&quot;Detected features&quot;</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/5-qc-metric-dist-detected-features.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/5-qc-metric-dist-detected-features.png" width="600" /></a></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;subsets_Mito_percent&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nf">ggtitle</span><span class="p">(</span><span class="s">&quot;Mito percent&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><a class="glightbox" href="../../r_images/6-qc-mtertic-dist-mito-percent.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/6-qc-mtertic-dist-mito-percent.png" width="600" /></a></p>
+<p>A scatter plot shows the extent to which library size and numbers of genes detected are correlated.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="nf">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span><span class="nf">arrange</span><span class="p">(</span><span class="n">subsets_Mito_percent</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">    </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sum</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">detected</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">    </span><span class="nf">geom_point</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subsets_Mito_percent</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">10</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">    </span><span class="nf">facet_wrap</span><span class="p">(</span><span class="nf">vars</span><span class="p">(</span><span class="n">SampleGroup</span><span class="p">))</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/7-qc-mtertic-dist-subset-mite-percent.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/7-qc-mtertic-dist-subset-mite-percent.png" width="600" /></a></p>
+</div>
+<h3 id="identification-of-low-quality-cells-with-adaptive-thresholds">Identification of low-quality cells with adaptive thresholds<a class="headerlink" href="#identification-of-low-quality-cells-with-adaptive-thresholds" title="Permanent link">&para;</a></h3>
+<p>One could use hard threshold for the library size, number of genes detected and mitochondrial content based on the distributions seen above. These would need vary across runs and the decision making process is somewhat arbitrary. It may therefore be preferable to rely on outlier detection to identify cells that markedly differ from most cells.</p>
+<p>We saw above that the distribution of the QC metrics is close to Normal. Hence, we can detect outliers using the median and the <a href="https://en.wikipedia.org/wiki/Median_absolute_deviation">median absolute deviation (MAD) from the median</a> (not the mean and the standard deviation which both are sensitive to outliers).</p>
+<p>For a given metric, an outlier value is one that lies over some number of MADs away from the median. A cell will be excluded if it is an outlier in the part of the range to avoid, for example low gene counts, or high mitochondrial content. For a normal distribution, a threshold defined with a distance of 3 MADs from the median retains about 99% of values.</p>
+<p>The <code>scater</code> function <code>isOutlier</code> can be used to detect outlier cells based on any metric in the <code>colData</code> table. It returns a boolean vector that identifies outliers. By default it will mark any cell that is 3 MADS in either direction from the median as an outlier.</p>
+<h4 id="library-size">Library size<a class="headerlink" href="#library-size" title="Permanent link">&para;</a></h4>
+<p>With library size we wish to identify outliers that have very low library sizes, this indicates that the droplets either contain poor quality cells, perhaps damaged or dying, or do not contain a cell at all.</p>
+<p>The library size distribution tends to have a long tail to the right (small numbers of cells with very high UMI counts). We therefore log transform the library size in order to the make the distribution closer to normal. This also improves the resolution of the smaller library sizes and ensures that we do not end up with negative threshold.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">low_lib_size</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">isOutlier</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">sum</span><span class="p">,</span><span class="w"> </span><span class="n">log</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="nf">table</span><span class="p">(</span><span class="n">low_lib_size</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>
+<p>This has excluded 0 cells. We can view the threshold values to check that they seem reasonable.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="nf">attr</span><span class="p">(</span><span class="n">low_lib_size</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>We can view the effect of the filtering using <code>plotColData</code>.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">low_lib_size</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">low_lib_size</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;sum&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;low_lib_size&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">    </span><span class="nf">scale_y_log10</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Total count&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Total count&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">    </span><span class="nf">guides</span><span class="p">(</span><span class="n">colour</span><span class="o">=</span><span class="nf">guide_legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Discarded&quot;</span><span class="p">))</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/8-ident-low-quality-library-size.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/8-ident-low-quality-library-size.png" width="600" /></a></p>
+</li>
+</ul>
+</div>
+<h4 id="number-of-genes">Number of genes<a class="headerlink" href="#number-of-genes" title="Permanent link">&para;</a></h4>
+<p>As with the library size, we will log tranform the number of genes detected prior to filtering using the median absolute deviation.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">low_n_features</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">isOutlier</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">detected</span><span class="p">,</span><span class="w"> </span><span class="n">log</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;lower&quot;</span><span class="p">)</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="nf">table</span><span class="p">(</span><span class="n">low_n_features</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>
+<p>This has excluded out 173 cells. The threshold value was:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="nf">attr</span><span class="p">(</span><span class="n">low_n_features</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">]</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>We can view the effect of the filtering using plotColData.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">low_n_features</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">low_n_features</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;detected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;low_n_features&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">    </span><span class="nf">scale_y_log10</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Genes detected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Genes detected&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="w">    </span><span class="nf">guides</span><span class="p">(</span><span class="n">colour</span><span class="o">=</span><span class="nf">guide_legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Discarded&quot;</span><span class="p">))</span>
+</code></pre></div></p>
+</li>
+</ul>
+<p><a class="glightbox" href="../../r_images/9-ident-low-quality-number-of-genes.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/9-ident-low-quality-number-of-genes.png" width="600" /></a></p>
+</div>
+<h4 id="mitochondrial-content">Mitochondrial content<a class="headerlink" href="#mitochondrial-content" title="Permanent link">&para;</a></h4>
+<p>For the mitochondrial content the exclusion zone is in the higher part of the distribution. For this reason we do not need to worry about log transforming the data as want to remove the long right hand tail anyway.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">high_Mito_percent</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">isOutlier</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">subsets_Mito_percent</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;higher&quot;</span><span class="p">)</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="nf">table</span><span class="p">(</span><span class="n">high_Mito_percent</span><span class="p">)</span><span class="w">  </span>
+</code></pre></div>
+<ul>
+<li>
+<p>This has removed 1720 cells in total. The upper threshold value:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nf">attr</span><span class="p">(</span><span class="n">high_Mito_percent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">2</span><span class="p">]</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>We can view the effect of the filtering using plotColData.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">high_Mito_percent</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">high_Mito_percent</span>
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span>
+<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="w">            </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span>
+<a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="w">            </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;subsets_Mito_percent&quot;</span><span class="p">,</span>
+<a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="w">            </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;high_Mito_percent&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Percentage mitochondrial UMIs&quot;</span><span class="p">,</span>
+<a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a><span class="w">         </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mitochondrial UMIs&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a><span class="w">    </span><span class="nf">guides</span><span class="p">(</span><span class="n">colour</span><span class="o">=</span><span class="nf">guide_legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Discarded&quot;</span><span class="p">))</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/10-ident-low-quality-mitochondrial-umis.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/10-ident-low-quality-mitochondrial-umis.png" width="600" /></a></p>
+</li>
+</ul>
+</div>
+<h4 id="summary-of-discarded-cells">Summary of discarded cells<a class="headerlink" href="#summary-of-discarded-cells" title="Permanent link">&para;</a></h4>
+<p>Having applied each of the three thresholds separately, we can now combine them to see how many droplets in total we will be excluding.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nf">tibble</span><span class="p">(</span><span class="n">low_lib_size</span><span class="p">,</span><span class="w"> </span><span class="n">low_n_features</span><span class="p">,</span><span class="w"> </span><span class="n">high_Mito_percent</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">  </span><span class="nf">mutate</span><span class="p">(</span><span class="n">discard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">low_lib_size</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">low_n_features</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">high_Mito_percent</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">  </span><span class="nf">mutate</span><span class="p">(</span><span class="n">SampleName</span><span class="o">=</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="w">  </span><span class="nf">group_by</span><span class="p">(</span><span class="n">SampleName</span><span class="p">)</span><span class="w">  </span><span class="o">%&gt;%</span>
+<a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="w">  </span><span class="nf">summarise</span><span class="p">(</span><span class="nf">across</span><span class="p">(</span><span class="nf">where</span><span class="p">(</span><span class="n">is.logical</span><span class="p">),</span><span class="w"> </span><span class="n">sum</span><span class="p">))</span>
+</code></pre></div>
+</div>
+<h4 id="all-three-filter-steps-at-once">All three filter steps at once<a class="headerlink" href="#all-three-filter-steps-at-once" title="Permanent link">&para;</a></h4>
+<p>The three steps above may be run in one go using the quickPerCellQC function. This creates a DataFrame with 4 columns containing TRUE/FALSE - one for each filter metric and one called “discard” that combined the three logicals.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">cell_qc_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">quickPerCellQC</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">),</span><span class="w"> </span><span class="n">sub.fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">cell_qc_results</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">  </span><span class="nf">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="w">  </span><span class="nf">mutate</span><span class="p">(</span><span class="n">SampleName</span><span class="o">=</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="w">  </span><span class="nf">group_by</span><span class="p">(</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="w">  </span><span class="nf">summarise</span><span class="p">(</span><span class="nf">across</span><span class="p">(</span><span class="nf">where</span><span class="p">(</span><span class="n">is.logical</span><span class="p">),</span><span class="w"> </span><span class="n">sum</span><span class="p">))</span>
+</code></pre></div></p>
+</div>
+<details class="circle-info">
+<summary>Assumptions and considerations</summary>
+<h4 id="assumptions">Assumptions<a class="headerlink" href="#assumptions" title="Permanent link">&para;</a></h4>
+<p>Data quality depends on the tissue analysed, some being difficult to dissociate, e.g. brain, so that one level of QC stringency will not fit all data sets.</p>
+<p>Filtering based on QC metrics as done here assumes that these QC metrics are not correlated with biology. This may not necessarily be true in highly heterogenous data sets where some cell types represented by good-quality cells may have low RNA content or high mitochondrial content.</p>
+<h4 id="considering-experimental-factors-when-filtering">Considering experimental factors when filtering<a class="headerlink" href="#considering-experimental-factors-when-filtering" title="Permanent link">&para;</a></h4>
+<p>The samples analysed here may have been processed in different batches leading to differences in the overall distribution of UMI counts, numbers of genes detected and mitochondrial content. Such differences would affect the adaptive thresholds discussed above - that is, as the distributions of the metrics differ, perhaps we should really apply the adaptive thresholding for each batch rather than universally across all samples. The `quickPerCellQC has a “batch” argument that allows us to specify with samples belong to which batches. The batches are then filtered independently.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">batch.cell_qc_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">quickPerCellQC</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">),</span><span class="w"> </span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">                                     </span><span class="n">sub.fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">                                     </span><span class="n">batch</span><span class="o">=</span><span class="n">sce</span><span class="o">$</span><span class="n">Sample</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">batch.cell_qc_results</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">  </span><span class="nf">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="w">  </span><span class="nf">mutate</span><span class="p">(</span><span class="n">SampleName</span><span class="o">=</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="w">  </span><span class="nf">group_by</span><span class="p">(</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a><span class="w">  </span><span class="nf">summarise</span><span class="p">(</span><span class="nf">across</span><span class="p">(</span><span class="nf">where</span><span class="p">(</span><span class="n">is.logical</span><span class="p">),</span><span class="w"> </span><span class="n">sum</span><span class="p">))</span>
+</code></pre></div></p>
+</div>
+<p>The table below shows how the thresholds for each metric differ between the batch-wise analysis and the analysis using all samples.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="n">all.thresholds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">tibble</span><span class="p">(</span><span class="n">`SampleName`</span><span class="o">=</span><span class="s">&quot;All&quot;</span><span class="p">,</span>
+<a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="w">                          </span><span class="n">`Library Size`</span><span class="o">=</span><span class="nf">attr</span><span class="p">(</span><span class="n">cell_qc_results</span><span class="o">$</span><span class="n">low_lib_size</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">],</span>
+<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="w">                         </span><span class="n">`Genes detected`</span><span class="o">=</span><span class="nf">attr</span><span class="p">(</span><span class="n">cell_qc_results</span><span class="o">$</span><span class="n">low_n_features</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">],</span>
+<a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a><span class="w">                          </span><span class="n">`Mitochondrial UMIs`</span><span class="o">=</span><span class="nf">attr</span><span class="p">(</span><span class="n">cell_qc_results</span><span class="o">$</span><span class="n">high_subsets_Mito_percent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">2</span><span class="p">])</span>
+<a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a>
+<a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a>
+<a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a><span class="w"> </span><span class="nf">tibble</span><span class="p">(</span><span class="n">`Sample`</span><span class="o">=</span><span class="nf">names</span><span class="p">(</span><span class="nf">attr</span><span class="p">(</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_lib_size</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">,]),</span>
+<a id="__codelineno-42-8" name="__codelineno-42-8" href="#__codelineno-42-8"></a><span class="w">        </span><span class="n">`Library Size`</span><span class="o">=</span><span class="nf">attr</span><span class="p">(</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_lib_size</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">,],</span>
+<a id="__codelineno-42-9" name="__codelineno-42-9" href="#__codelineno-42-9"></a><span class="w">       </span><span class="n">`Genes detected`</span><span class="o">=</span><span class="nf">attr</span><span class="p">(</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_n_features</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">1</span><span class="p">,],</span>
+<a id="__codelineno-42-10" name="__codelineno-42-10" href="#__codelineno-42-10"></a><span class="w">       </span><span class="n">`Mitochondrial UMIs`</span><span class="o">=</span><span class="nf">attr</span><span class="p">(</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">high_subsets_Mito_percent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;thresholds&quot;</span><span class="p">)[</span><span class="m">2</span><span class="p">,])</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-42-11" name="__codelineno-42-11" href="#__codelineno-42-11"></a><span class="w">  </span><span class="nf">left_join</span><span class="p">(</span><span class="n">samplesheet</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-42-12" name="__codelineno-42-12" href="#__codelineno-42-12"></a><span class="w">  </span><span class="n">dplyr</span><span class="o">::</span><span class="nf">select</span><span class="p">(</span><span class="n">SampleName</span><span class="p">,</span><span class="w"> </span><span class="n">`Library Size`</span><span class="p">,</span><span class="w"> </span><span class="n">`Genes detected`</span><span class="p">,</span><span class="w"> </span><span class="n">`Mitochondrial UMIs`</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-42-13" name="__codelineno-42-13" href="#__codelineno-42-13"></a><span class="w">  </span><span class="nf">bind_rows</span><span class="p">(</span><span class="n">all.thresholds</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-42-14" name="__codelineno-42-14" href="#__codelineno-42-14"></a><span class="w">   </span><span class="nf">mutate</span><span class="p">(</span><span class="nf">across</span><span class="p">(</span><span class="nf">where</span><span class="p">(</span><span class="n">is.numeric</span><span class="p">),</span><span class="w"> </span><span class="n">round</span><span class="p">,</span><span class="w"> </span><span class="n">digits</span><span class="o">=</span><span class="m">2</span><span class="p">))</span>
+</code></pre></div>
+<center></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">SampleName</th>
+<th style="text-align: left;">Library Size</th>
+<th style="text-align: left;">Genes detected</th>
+<th style="text-align: left;">Mitochondrial UMIs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ETV6-RUNX1_1</td>
+<td style="text-align: left;">1475.79</td>
+<td style="text-align: left;">1018.21</td>
+<td style="text-align: left;">9.56</td>
+</tr>
+<tr>
+<td style="text-align: left;">HHD_1</td>
+<td style="text-align: left;">297.78</td>
+<td style="text-align: left;">318.38</td>
+<td style="text-align: left;">12.14</td>
+</tr>
+<tr>
+<td style="text-align: left;">PRE-T_1</td>
+<td style="text-align: left;">252.52</td>
+<td style="text-align: left;">382.36</td>
+<td style="text-align: left;">6.24</td>
+</tr>
+<tr>
+<td style="text-align: left;">PBMMC_1</td>
+<td style="text-align: left;">580.14</td>
+<td style="text-align: left;">496</td>
+<td style="text-align: left;">7.23</td>
+</tr>
+<tr>
+<td style="text-align: left;">All</td>
+<td style="text-align: left;">373.1</td>
+<td style="text-align: left;">387.88</td>
+<td style="text-align: left;">11.14</td>
+</tr>
+</tbody>
+</table>
+<p></center></p>
+<ul>
+<li>Let’s replace the columns in the droplet annotation with these new filters.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">low_lib_size</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_lib_size</span>
+<a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a><span class="n">sce</span><span class="o">$</span><span class="n">low_n_features</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_n_features</span>
+<a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a><span class="n">sce</span><span class="o">$</span><span class="n">high_Mito_percent</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">high_subsets_Mito_percent</span>
+<a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a><span class="n">sce</span><span class="o">$</span><span class="n">discard</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">discard</span>
+</code></pre></div>
+</div>
+<ul>
+<li>
+<p>We can visualise how the new filters look using violin plots.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;sum&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;low_lib_size&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">   </span><span class="nf">scale_y_log10</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="w">   </span><span class="nf">labs</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Total count&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Total count&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a><span class="w">   </span><span class="nf">guides</span><span class="p">(</span><span class="n">colour</span><span class="o">=</span><span class="nf">guide_legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Discarded&quot;</span><span class="p">))</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/11-factors-filtering-total-count.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/11-factors-filtering-total-count.png" width="600" /></a></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="w">  </span><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;detected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;low_n_features&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">    </span><span class="nf">scale_y_log10</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="w">     </span><span class="nf">labs</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Genes detected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Genes detected&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-45-4" name="__codelineno-45-4" href="#__codelineno-45-4"></a><span class="w">     </span><span class="nf">guides</span><span class="p">(</span><span class="n">colour</span><span class="o">=</span><span class="nf">guide_legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Discarded&quot;</span><span class="p">))</span>
+</code></pre></div>
+<p><a class="glightbox" href="../../r_images/12-factors-filtering-genes-detected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/12-factors-filtering-genes-detected.png" width="600" /></a></p>
+<ul>
+<li>There are some distinct differences, most noticeable is that some cells are now being filtered based on library size for both ETV6-RUNX1_1 and PBMMC_1a. The venn diagrams below show how the number of discarded droplets in have changed for each filter in comparison to when the MAD filtering was applied across all samples.</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">pc1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">tibble</span><span class="p">(</span><span class="n">`All together`</span><span class="o">=</span><span class="n">cell_qc_results</span><span class="o">$</span><span class="n">low_lib_size</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="w">             </span><span class="n">`By batch`</span><span class="o">=</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_lib_size</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="w">          </span><span class="nf">ggvenn</span><span class="p">(</span><span class="n">show_percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a><span class="w">              </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Library Size&quot;</span><span class="p">)</span>
+<a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a>
+<a id="__codelineno-46-6" name="__codelineno-46-6" href="#__codelineno-46-6"></a><span class="n">pc2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">tibble</span><span class="p">(</span><span class="n">`All together`</span><span class="o">=</span><span class="n">cell_qc_results</span><span class="o">$</span><span class="n">low_n_features</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-46-7" name="__codelineno-46-7" href="#__codelineno-46-7"></a><span class="w">             </span><span class="n">`By batch`</span><span class="o">=</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">low_n_features</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-46-8" name="__codelineno-46-8" href="#__codelineno-46-8"></a><span class="w">          </span><span class="nf">ggvenn</span><span class="p">(</span><span class="n">show_percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-46-9" name="__codelineno-46-9" href="#__codelineno-46-9"></a><span class="w">              </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Genes detected&quot;</span><span class="p">)</span>
+<a id="__codelineno-46-10" name="__codelineno-46-10" href="#__codelineno-46-10"></a>
+<a id="__codelineno-46-11" name="__codelineno-46-11" href="#__codelineno-46-11"></a><span class="n">pc3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">tibble</span><span class="p">(</span><span class="n">`All together`</span><span class="o">=</span><span class="n">cell_qc_results</span><span class="o">$</span><span class="n">high_subsets_Mito_percent</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-46-12" name="__codelineno-46-12" href="#__codelineno-46-12"></a><span class="w">                </span><span class="n">`By batch`</span><span class="o">=</span><span class="n">batch.cell_qc_results</span><span class="o">$</span><span class="n">high_subsets_Mito_percent</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-46-13" name="__codelineno-46-13" href="#__codelineno-46-13"></a><span class="w">           </span><span class="nf">ggvenn</span><span class="p">(</span><span class="n">show_percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-46-14" name="__codelineno-46-14" href="#__codelineno-46-14"></a><span class="w">              </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Mitochondrial UMIs&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a>p   c1 + pc2 + pc3
+</code></pre></div>
+<a class="glightbox" href="../../r_images/13-factors-filtering-venn-diagrams.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/13-factors-filtering-venn-diagrams.png" width="600" /></a></p>
+<ul>
+<li>The most striking difference is in the filtering by library size. As we can see from the violin plots ETV6-RUNX1_1 has a markedly different library size distribution to the other three samples. When we applied the adaptive filters across all samples, the lower distributions of the other three samples caused the MADs to be distorted and resulted in a threshold that was inappropriately low for the ETV6-RUNX1_1 samples.</li>
+</ul>
+<h3 id="filtering-out-poor-quality-cells">Filtering out poor quality cells<a class="headerlink" href="#filtering-out-poor-quality-cells" title="Permanent link">&para;</a></h3>
+<p>Now that we have identified poor quality cells we can filter them out before proceeding to do any further analysis.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">sce.filtered</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce</span><span class="p">[,</span><span class="w"> </span><span class="o">!</span><span class="n">sce</span><span class="o">$</span><span class="n">discard</span><span class="p">]</span>
+</code></pre></div>
+</div>
+</li>
+</ul>
+</details>
+<h2 id="qc-and-filtering-by-combining-the-metrics">QC and filtering by combining the metrics<a class="headerlink" href="#qc-and-filtering-by-combining-the-metrics" title="Permanent link">&para;</a></h2>
+<p>In the previous approach we used the three metrics in isolation to filter droplets. Another approach is to combine the three (or more) metrics in a single filtering step by looking for outliers in the multi-dimensional space defined by the metrics.</p>
+<p>As with the adaptive thresholds above, this method should not be applied across batches or samples with differing distributions in the metrics or it will exclude many good quality cells. To demonstrate these methods, we’ll just extract one sample from our SingleCellExperiment object.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">sce.E1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce</span><span class="p">[</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">SampleName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;ETV6-RUNX1_1&quot;</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<h3 id="using-outlyingness">Using “outlyingness”<a class="headerlink" href="#using-outlyingness" title="Permanent link">&para;</a></h3>
+<p>Essentially we need to reduce our three metrics to a single metric, we can then use isOutlier to select outliers based on this metric. One way to do this is to use the function adjOutlyingness from the robustbase package. This function computes the “outlyingness” for each droplet.</p>
+<p>Here we will use the same three metrics as before: library size, the number of genes detected and the mitochondrial content. Remember that for “sum” (total UMIs) and “detected” (number of genes detected), we want to use the log10 value.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="nf">library</span><span class="p">(</span><span class="n">robustbase</span><span class="p">)</span>
+<a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="n">stats</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">cbind</span><span class="p">(</span><span class="nf">log10</span><span class="p">(</span><span class="n">sce.E1</span><span class="o">$</span><span class="n">sum</span><span class="p">),</span>
+<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="w">               </span><span class="nf">log10</span><span class="p">(</span><span class="n">sce.E1</span><span class="o">$</span><span class="n">detected</span><span class="p">),</span>
+<a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a><span class="w">               </span><span class="n">sce.E1</span><span class="o">$</span><span class="n">subsets_Mito_percent</span><span class="p">)</span>
+<a id="__codelineno-50-5" name="__codelineno-50-5" href="#__codelineno-50-5"></a>
+<a id="__codelineno-50-6" name="__codelineno-50-6" href="#__codelineno-50-6"></a><span class="n">outlying</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">adjOutlyingness</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span><span class="w"> </span><span class="n">only.outlyingness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<a id="__codelineno-50-7" name="__codelineno-50-7" href="#__codelineno-50-7"></a><span class="n">multi.outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">isOutlier</span><span class="p">(</span><span class="n">outlying</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;higher&quot;</span><span class="p">)</span>
+<a id="__codelineno-50-8" name="__codelineno-50-8" href="#__codelineno-50-8"></a><span class="nf">summary</span><span class="p">(</span><span class="n">multi.outlier</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<h3 id="using-pca">Using PCA<a class="headerlink" href="#using-pca" title="Permanent link">&para;</a></h3>
+<p>Another approach is to perform a principal component analysis (PCA) on the table of metrics, apply <code>adjOutlyingness</code> to the metrics table and use this to detect outliers. The <code>scater</code> function <code>runColDataPCA</code> can be used to perform the PCA and detect outliers. We’ll need to add a couple of columns to the <code>colData</code> for the log10 metrics first.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">sce.E1</span><span class="o">$</span><span class="n">log10sum</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log10</span><span class="p">(</span><span class="n">sce.E1</span><span class="o">$</span><span class="n">sum</span><span class="p">)</span>
+<a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="n">sce.E1</span><span class="o">$</span><span class="n">log10detected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log10</span><span class="p">(</span><span class="n">sce.E1</span><span class="o">$</span><span class="n">detected</span><span class="p">)</span>
+<a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="n">sce.E1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">runColDataPCA</span><span class="p">(</span><span class="n">sce.E1</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="w">                     </span><span class="n">variables</span><span class="o">=</span><span class="nf">list</span><span class="p">(</span><span class="s">&quot;log10sum&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a><span class="w">                                    </span><span class="s">&quot;log10detected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-51-6" name="__codelineno-51-6" href="#__codelineno-51-6"></a><span class="w">                                    </span><span class="s">&quot;subsets_Mito_percent&quot;</span><span class="p">),</span>
+<a id="__codelineno-51-7" name="__codelineno-51-7" href="#__codelineno-51-7"></a><span class="w">                     </span><span class="n">outliers</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span>
+<a id="__codelineno-51-8" name="__codelineno-51-8" href="#__codelineno-51-8"></a><span class="w">                     </span><span class="n">BPPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bp.params</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>This has added the results of the principal component analysis into a new slot in the SingleCellExperiment object specifically for holding the results of dimension reduction transformations such as PCA, t-SNE and UMAP. The results can be accessed using the <code>reducedDim</code> function.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="nf">head</span><span class="p">(</span><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce.E1</span><span class="p">))</span>
+</code></pre></div></li>
+<li>It has also added a column “outlier” to the <code>colData</code>, which specifies the droplets that have been identified as outliers.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="nf">summary</span><span class="p">(</span><span class="n">sce.E1</span><span class="o">$</span><span class="n">outlier</span><span class="p">)</span>
+</code></pre></div></li>
+</ul>
+</div>
+<h3 id="a-note-on-multi-dimensional-filtering">A note on multi-dimensional filtering<a class="headerlink" href="#a-note-on-multi-dimensional-filtering" title="Permanent link">&para;</a></h3>
+<p>These types of approach can provide more power for detecting outliers as they are looking at patterns across multiple metrics, however, it can be difficult to interpret the reason why any particular droplet has been excluded.</p>
+<h2 id="mitochondrial-content-versus-library-size">Mitochondrial content versus library size<a class="headerlink" href="#mitochondrial-content-versus-library-size" title="Permanent link">&para;</a></h2>
+<p>A useful diagnostic plot for assessing the impact of the filtering is to do a scatter plot of the mitochondrial content against the library size. We can overlay our final filter metric using the point colour.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a><span class="nf">plotColData</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-54-2" name="__codelineno-54-2" href="#__codelineno-54-2"></a><span class="w">            </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;sum&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-54-3" name="__codelineno-54-3" href="#__codelineno-54-3"></a><span class="w">            </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;subsets_Mito_percent&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-54-4" name="__codelineno-54-4" href="#__codelineno-54-4"></a><span class="w">            </span><span class="n">other_fields</span><span class="o">=</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span>
+<a id="__codelineno-54-5" name="__codelineno-54-5" href="#__codelineno-54-5"></a><span class="w">            </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;discard&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-54-6" name="__codelineno-54-6" href="#__codelineno-54-6"></a><span class="w">    </span><span class="nf">facet_wrap</span><span class="p">(</span><span class="o">~</span><span class="n">SampleName</span><span class="p">,</span><span class="w"> </span><span class="n">ncol</span><span class="o">=</span><span class="m">5</span><span class="p">,</span><span class="w"> </span><span class="n">scale</span><span class="o">=</span><span class="s">&quot;free_x&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><a class="glightbox" href="../../r_images/14-mitochondrial-content-vs-lib-size.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/14-mitochondrial-content-vs-lib-size.png" width="600" /></a></p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 1. Alignment and feature counting with Cell Ranger">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                1. Alignment and feature counting with Cell Ranger
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../3/" class="md-footer__link md-footer__link--next" aria-label="Next: 3. Normalisation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                3. Normalisation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Analysis of single cell RNA-seq data workshop material is licensed under a <a rel="noopener" target="_blank" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License v3.0</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

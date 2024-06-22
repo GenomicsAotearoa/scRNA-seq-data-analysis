@@ -1,0 +1,1442 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Genomics Aotearoa & NeSI">
+      
+      
+        <link rel="canonical" href="https://genomicsaotearoa.github.io/scRNA-seq-data-analysis/episodes/7/">
+      
+      
+        <link rel="prev" href="../6/">
+      
+      
+        <link rel="next" href="../8/">
+      
+      
+      <link rel="icon" href="../../theme_images/nesi_ga.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>7. Clustering - Analysis of single cell RNA-seq data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Mukta";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#7-clustering" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+<!-- Custom Banner -->
+<div class="banner">
+    <p style="color:rgb(250, 246, 246); display:inline;font-size: 160%;">This repository is in the early stages of development (Beta Version)</p>
+</div>
+
+<!-- Original Header -->
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-header__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Analysis of single cell RNA-seq data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              7. Clustering
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-nav__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    Analysis of single cell RNA-seq data
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Episodes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Episodes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../0/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Alignment and feature counting with Cell Ranger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. QC and Exploratory Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Normalisation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. sctransform: Variance Stabilising Transformation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. Feature Selection and Dimensionality Reduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../6/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    6. Batch correction and data set integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    7. Clustering
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    7. Clustering
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction-to-graph-based-clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction to Graph-based clustering
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Introduction to Graph-based clustering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connecting-nodes-cells-based-on-nearest-neighbours" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connecting nodes (cells) based on nearest neighbours
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weighting-the-edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      Weighting the edges
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grouping-nodes-cells-into-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Grouping nodes (cells) into clusters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modularity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pros-and-cons-of-graph-based-clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pros and Cons of graph based clustering
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-walktrap-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Walktrap method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-louvain-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Louvain method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-leiden-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Leiden method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assessing-cluster-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assessing cluster behaviour
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assessing cluster behaviour">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#silhouette-width" class="md-nav__link">
+    <span class="md-ellipsis">
+      Silhouette width
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modularity-to-assess-cluster-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modularity to assess cluster quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparing-two-sets-of-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparing two sets of clusters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../8/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    8. Identification of cluster marker genes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    9. Differential expression analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    10. Differential Abundance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction-to-graph-based-clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction to Graph-based clustering
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Introduction to Graph-based clustering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connecting-nodes-cells-based-on-nearest-neighbours" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connecting nodes (cells) based on nearest neighbours
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weighting-the-edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      Weighting the edges
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grouping-nodes-cells-into-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Grouping nodes (cells) into clusters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modularity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pros-and-cons-of-graph-based-clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pros and Cons of graph based clustering
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-walktrap-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Walktrap method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-louvain-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Louvain method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-leiden-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Leiden method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assessing-cluster-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assessing cluster behaviour
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assessing cluster behaviour">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#silhouette-width" class="md-nav__link">
+    <span class="md-ellipsis">
+      Silhouette width
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modularity-to-assess-cluster-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modularity to assess cluster quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparing-two-sets-of-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparing two sets of clusters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="7-clustering">7. Clustering<a class="headerlink" href="#7-clustering" title="Permanent link">&para;</a></h1>
+<p>Once we have normalized the data and removed confounders we can carry out analyses that are relevant to the biological questions at hand. The exact nature of the analysis depends on the data set. One of the most promising applications of scRNA-seq is de novo discovery and annotation of cell-types based on transcription profiles. This requires the identification of groups of cells based on the similarities of the transcriptomes without any prior knowledge of the label a.k.a. unsupervised clustering. To avoid the challenges caused by the noise and high dimensionality of the scRNA-seq data, clustering is performed after feature selection and dimensionality reduction. For data that has not required batch correction this would usually be based on the PCA output. As our data has required batch correction we will use the “corrected” reducedDims data.</p>
+<p>We will focus here on graph-based clustering, however, it is also possible to apply hierarchical clustering and k-means clustering on smaller data sets</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">We will use the data set generated in the previous session. This contains 7 samples from the Caron data set. In the interests of time, each sample has been downsampled to only contain 500 cells.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">library</span><span class="p">(</span><span class="n">scater</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nf">library</span><span class="p">(</span><span class="n">scran</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nf">library</span><span class="p">(</span><span class="n">bluster</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nf">library</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nf">library</span><span class="p">(</span><span class="n">igraph</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nf">library</span><span class="p">(</span><span class="n">pheatmap</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nf">library</span><span class="p">(</span><span class="n">patchwork</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;R_objects/Caron_batch_corrected.500.rds&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span>
+</code></pre></div></p>
+</div>
+<h2 id="introduction-to-graph-based-clustering">Introduction to Graph-based clustering<a class="headerlink" href="#introduction-to-graph-based-clustering" title="Permanent link">&para;</a></h2>
+<p>Graph-based clustering entails building a nearest-neighbour (NN) graph using cells as nodes and their similarity as edges, then identifying ‘communities’ of cells within the network. A graph-based clustering method has three key parameters:</p>
+<ul>
+<li>How many neighbors are considered when constructing the graph</li>
+<li>What scheme is used to weight the edges</li>
+<li>Which community detection algorithm is used to define the clusters</li>
+</ul>
+<h3 id="connecting-nodes-cells-based-on-nearest-neighbours">Connecting nodes (cells) based on nearest neighbours<a class="headerlink" href="#connecting-nodes-cells-based-on-nearest-neighbours" title="Permanent link">&para;</a></h3>
+<p>Two types of NN graph may be used: “K nearest-neighbour” (KNN) and “shared nearest-neighbour” (SNN). In a KNN graph, two nodes (cells), say A and B, are connected by an edge if the distance between them is amongst the k smallest distances from A to other cells. In an SNN graph A and B are connected if the distance is amongst the k samllest distances from A to other cells and also among the k smallest distance from B to other cells.</p>
+<p><center><a class="glightbox" href="../../r_images/nodebased-nearest-1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/nodebased-nearest-1.png" width="300" /></a></center></p>
+<p>In the figure above, if k is 5, then A and B would be connected in a KNN graph as B is one of the 5 closest cells to A, however, they would not be connected in an SNN graph as B has 5 other cells that are closer to it than A.</p>
+<p>The value of k can be roughly interpreted as the anticipated size of the smallest subpopulation” (see <code>scran</code>’s <code>buildSNNGraph()</code> <a href="https://rdrr.io/bioc/scran/man/buildSNNGraph.html">manual</a>).</p>
+<p>The plot below shows the same data set as a network built using three different numbers of neighbours: 5, 15 and 25 (from <a href="https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/clustering-and-cell-annotation.html#example-1.-graph-based-clustering-deng-dataset">here</a>).</p>
+<p><center><a class="glightbox" href="../../r_images/nodebased-nearest-2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/nodebased-nearest-2.png" width="600" /></a></center></p>
+<h3 id="weighting-the-edges">Weighting the edges<a class="headerlink" href="#weighting-the-edges" title="Permanent link">&para;</a></h3>
+<p>The edges between nodes (cells) can be weighted based on the similarity of the cells; edges connecting cells that are more closely related will have a higher weight. The three common methods for this weighting are (see the bluster package documentation for the makeSNNGraph function):</p>
+<ul>
+<li>rank - the weight is based on the highest rank of the shared nearest neighbours</li>
+<li>number - the weight is based the number of nearest neighbours in common between the two cells</li>
+<li>jaccard - the <a href="https://en.wikipedia.org/wiki/Jaccard_index">Jaccard index</a> of the two cells’ sets of nearest neighbours.</li>
+</ul>
+<h3 id="grouping-nodes-cells-into-clusters">Grouping nodes (cells) into clusters<a class="headerlink" href="#grouping-nodes-cells-into-clusters" title="Permanent link">&para;</a></h3>
+<p>Clusters are identified using an algorithm that interprets the connections of the graph to find groups of highly interconnected cells. A variety of different algorithms are available to do this, in these materials we will focus on three methods: walktrap, louvain and leiden. See the OSCA book for details of others available in scran.</p>
+<h3 id="modularity">Modularity<a class="headerlink" href="#modularity" title="Permanent link">&para;</a></h3>
+<p>Several methods to detect clusters (‘communities’) in networks rely on a metric called “modularity”. For a given partition of cells into clusters, modularity measures how separated clusters are from each other, based on the difference between the observed and expected weight of edges between nodes. For the whole graph, the closer to 1 the better.</p>
+<h3 id="pros-and-cons-of-graph-based-clustering">Pros and Cons of graph based clustering<a class="headerlink" href="#pros-and-cons-of-graph-based-clustering" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Pros:</p>
+<ul>
+<li>fast and memory efficient (avoids the need to construct a distance matrix for all pairs of cells)</li>
+<li>no assumptions on the shape of the clusters or the distribution of cells within each cluster</li>
+<li>no need to specify a number of clusters to identify (but the size of the neighbourhood used affects the size of clusters)</li>
+</ul>
+</li>
+<li>
+<p>Cons:</p>
+<ul>
+<li>loss of information beyond neighboring cells, which can affect community detection in regions with many cells.</li>
+</ul>
+</li>
+</ul>
+<h2 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h2>
+<p>The implementation of clustering in R is carried out using functions from a number of different packages, in particular the bluster and igraph packages. scran provides a handy “wrapper” function <code>clusterCells</code> that allows us use a variety of different algorithms with one simple command.</p>
+<p>By default <code>clusterCells</code> just returns a vector containing the cluster number for each cell. We can also retrieve the intermediate statistics (varying according to the algorithm used) and the SNN graph by specifying the bluster argument <code>full = TRUE</code>. If you are only interested in retrieving the clusters, this isn’t necessary but in this first instance we will retrieve the graph and visualise it. The default algorithm for clusterCells is Walktrap with k is set to 10 by default. The default edge weighting is “rank”.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">clustering1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">use.dimred</span><span class="o">=</span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">full</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">This</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">defined</span><span class="w"> </span><span class="m">24</span><span class="w"> </span><span class="n">clusters</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">varying</span><span class="w"> </span><span class="n">numbers</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">cells</span><span class="o">:</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">clustering1</span><span class="o">$</span><span class="n">clusters</span><span class="p">)</span>
+</code></pre></div></p>
+<p>The number of cells in the data set is large and plotting all the cells would take too long, so we randomly choose 1000 nodes (cells) in the network before plotting the resulting smaller network. Adding sample data to the graph and plotting the results are done using the igraph package. Cells can be color-coded by sample type:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># extract the graph</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">snn.gr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">clustering1</span><span class="o">$</span><span class="n">objects</span><span class="o">$</span><span class="n">graph</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Add Sample group to vertices (nodes, ie cells)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nf">V</span><span class="p">(</span><span class="n">snn.gr</span><span class="p">)</span><span class="o">$</span><span class="n">SampleGroup</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.character</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span><span class="o">$</span><span class="n">SampleGroup</span><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># pick 1000 nodes randomly</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="nf">set.seed</span><span class="p">(</span><span class="m">1423</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">selectedNodes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="m">3500</span><span class="p">,</span><span class="w"> </span><span class="m">1000</span><span class="p">)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># subset graph for these 1000 randomly chosen nodes</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">snn.gr.subset</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">subgraph</span><span class="p">(</span><span class="n">snn.gr</span><span class="p">,</span><span class="w"> </span><span class="n">selectedNodes</span><span class="p">)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="c1"># set colors for clusters</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="n">grps</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">  </span><span class="nf">V</span><span class="p">(</span><span class="n">snn.gr.subset</span><span class="p">)</span><span class="o">$</span><span class="n">SampleGroup</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="n">cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;dodgerblue&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lightyellow&quot;</span><span class="p">)[</span><span class="nf">as.numeric</span><span class="p">(</span><span class="nf">factor</span><span class="p">(</span><span class="n">grps</span><span class="p">))]</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="nf">names</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">grps</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="c1"># plot graph</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="nf">plot.igraph</span><span class="p">(</span><span class="n">snn.gr.subset</span><span class="p">,</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">  </span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">layout_with_fr</span><span class="p">(</span><span class="n">snn.gr.subset</span><span class="p">),</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">  </span><span class="n">vertex.size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">  </span><span class="n">vertex.label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">NA</span><span class="p">,</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">  </span><span class="n">vertex.color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cols</span><span class="p">,</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">  </span><span class="n">frame.color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cols</span><span class="p">,</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">  </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;default parameters&quot;</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="p">)</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="c1"># add legend</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="nf">legend</span><span class="p">(</span><span class="s">&#39;bottomright&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">       </span><span class="n">legend</span><span class="o">=</span><span class="nf">unique</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">cols</span><span class="p">)),</span>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">       </span><span class="n">pch</span><span class="o">=</span><span class="m">21</span><span class="p">,</span>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">       </span><span class="n">pt.bg</span><span class="o">=</span><span class="nf">unique</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">       </span><span class="n">pt.cex</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">cex</span><span class="o">=</span><span class="n">.</span><span class="m">6</span><span class="p">,</span><span class="w"> </span><span class="n">bty</span><span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ncol</span><span class="o">=</span><span class="m">1</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/55-clustering-defaultparameters.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/55-clustering-defaultparameters.png" /></a></p>
+<p>More commonly we will visualise the clusters by superimposing them on a t-SNE or UMAP plot. We can store the clusters in the sce object colData.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">Clusters1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">clustering1</span><span class="o">$</span><span class="n">clusters</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">               </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;Clusters1&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Clusters1&quot;</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/56-clustering-superimpose-tSNE-UMAP.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/56-clustering-superimpose-tSNE-UMAP.png" /></a></p>
+</div>
+<h2 id="the-walktrap-method">The Walktrap method<a class="headerlink" href="#the-walktrap-method" title="Permanent link">&para;</a></h2>
+<p>The walktrap method relies on short random walks (a few steps) through the network. These walks tend to be ‘trapped’ in highly-connected regions of the network. Node similarity is measured based on these walks. Nodes are first each assigned their own community. Pairwise distances are computed and the two closest communities are grouped. These steps are repeated a given number of times to produce a dendrogram. Hierarchical clustering is then applied to the distance matrix. The best partition is that with the highest modularity. The original article describing the algorithm is <a href="https://arxiv.org/abs/physics/0512106">Pons P, Latapy M (2006) Computing communities in large networks using random walks. J Graph Algorithms Appl 10(2):191–218</a></p>
+<p>Walktrap is the default algorithm for <code>clusterCells</code>, k is set to 10 by default and the default edge weighting is “rank”. To explicitly request a specific algorithm and to set the k to a different number of nearest neighbours, we use a <code>SNNGraphParam</code> object from the bluster package (which is the package clusterCells is using under the hood).</p>
+<p>Let’s set the k to 15 but keep the other parameters the same. This time we will just return the clusters:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">walktrap15</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">                           </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">                           </span><span class="n">BLUSPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SNNGraphParam</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">15</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">                                                     </span><span class="n">cluster.fun</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;walktrap&quot;</span><span class="p">))</span>
+</code></pre></div>
+<ul>
+<li>This time we have defined 16 clustering. As a general rule, increasing k will tend to decrease the number of clusters (not always, but generally).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">walktrap15</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>We can visualise the assignment of cells from different samples to the clusters using a heatmap. This gives us an overview of how well each cluster is represented across the samples and the replicates. Several clusters (2, 8, 9 and 16) are present in the PBMMC samples, but absent from the ETV6_RUNX1 samples for instance.</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">w15_table</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="nf">table</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">walktrap15</span><span class="p">,</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="m">+1</span><span class="p">)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nf">pheatmap</span><span class="p">(</span><span class="n">w15_table</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/57-clustering-walktrap-pheatmap.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/57-clustering-walktrap-pheatmap.png" width="500" /></a></center></p>
+<p>Most clusters comprise cells from several replicates of the same sample type, cluster 10 appears to be predominantly cells from the ETV6-RUNX samples.</p>
+<p>We can visualise this on the TSNE:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;walktrap15&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;walktrap15&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/58-clustering-walktrap-TSNE.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/58-clustering-walktrap-TSNE.png" width="500" /></a></center></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;walktrap15&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;walktrap15&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">               </span><span class="n">other_fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">&quot;SampleGroup&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nf">facet_wrap</span><span class="p">(</span><span class="nf">vars</span><span class="p">(</span><span class="n">SampleGroup</span><span class="p">))</span>
+</code></pre></div>
+<p><center><a class="glightbox" href="../../r_images/59-cllustering-walktrap-TSNE-corrected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/59-cllustering-walktrap-TSNE-corrected.png" width="500" /></a></center></p>
+</div>
+<h2 id="the-louvain-method">The Louvain method<a class="headerlink" href="#the-louvain-method" title="Permanent link">&para;</a></h2>
+<p>With the Louvain method, nodes are also first assigned their own community. This hierarchical agglomerative method then progresses in two-step iterations:</p>
+<ol>
+<li>nodes are re-assigned one at a time to the community for which they increase modularity the most, if at all.</li>
+<li>a new, ‘aggregate’ network is built where nodes are the communities formed in the previous step.</li>
+</ol>
+<p>These two steps are repeated until modularity stops increasing. The diagram below is copied <a href="https://www.nature.com/articles/s41598-019-41695-z#Fig1">from this article</a>.</p>
+<p><center><a class="glightbox" href="../../r_images/louvain-method.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/louvain-method.png" width="370" /></a></center>
+<center><small>Louvain algorithm. The Louvain algorithm starts from a singleton partition in which each node is in its own community <strong>(a)</strong>. The algorithm moves individual nodes from one community to another to find a partition <strong>(b)</strong>. Based on this partition, an aggregate network is created <strong>&copy;</strong>. The algorithm then moves individual nodes in the aggregate network <strong>(d)</strong>. These steps are repeated until the quality cannot be increased further.</small>
+</center></p>
+<div class="admonition r-project-2">
+<p class="admonition-title">We now apply the Louvain approach, store its outcome in the SCE object and show cluster sizes.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">louvain15</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">                           </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">                           </span><span class="n">BLUSPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SNNGraphParam</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">15</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">                                                     </span><span class="n">cluster.fun</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;louvain&quot;</span><span class="p">))</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">louvain15</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/60-clustering-louvain-method-1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/60-clustering-louvain-method-1.png" width="600" /></a></center></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">If we split by sample type we can see differences in the clusters between the sample groups:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;louvain15&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;louvain15&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">               </span><span class="n">other_fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">&quot;SampleGroup&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">   </span><span class="nf">facet_wrap</span><span class="p">(</span><span class="nf">vars</span><span class="p">(</span><span class="n">SampleGroup</span><span class="p">))</span><span class="w"> </span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/61-clustering-louvain-method-2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/61-clustering-louvain-method-2.png" width="600" /></a></center></p>
+</div>
+<h2 id="the-leiden-method">The Leiden method<a class="headerlink" href="#the-leiden-method" title="Permanent link">&para;</a></h2>
+<p>The Leiden method improves on the Louvain method by guaranteeing that at each iteration clusters are connected and well-separated. The method includes an extra step in the iterations: after nodes are moved (step 1), the resulting partition is refined (step2) and only then the new aggregate network made, and refined (step 3). The diagram below is copied from this article.</p>
+<p><center><a class="glightbox" href="../../r_images/leiden-method.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/leiden-method.png" width="370" /></a></center>
+<center><small>Leiden algorithm. The Leiden algorithm starts from a singleton partition <strong>(a)</strong>. The algorithm moves individual nodes from one community to another to find a partition <strong>(b)</strong>, which is then refined <strong>&copy;</strong>. An aggregate network <strong>(d)</strong> is created based on the refined partition, using the non-refined partition to create an initial partition for the aggregate network. For example, the red community in <strong>(b)</strong> is refined into two subcommunities in <strong>&copy;</strong>, which after aggregation become two separate nodes in <strong>(d)</strong>, both belonging to the same community. The algorithm then moves individual nodes in the aggregate network <strong>(e)</strong>. In this case, refinement does not change the partition <strong>(f)</strong>. These steps are repeated until no further improvements can be made.</small>
+</center></p>
+<div class="admonition clipboard-question">
+<p class="admonition-title">Exercise</p>
+<p>run the clustering again, this time using the “leiden” method.</p>
+<ul>
+<li>
+<p>Set the k to 20 and add the results of the clustering to the<code>sce</code> object in a new column called “leiden20”.</p>
+</li>
+<li>
+<p>How many clusters does this result in?</p>
+</li>
+<li>
+<p>Visualize the clusters by plotting the t-SNE with the cells coloured according to your new clustering.</p>
+</li>
+</ul>
+<details class="circle-check">
+<summary>Answer</summary>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<ul>
+<li>
+<p>First run the clustering with `clusterCells:``
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">leiden20</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">                           </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">                           </span><span class="n">BLUSPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SNNGraphParam</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">                                                     </span><span class="n">cluster.fun</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;leiden&quot;</span><span class="p">))</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>We can quickly look at the results by summarising using <code>table</code>.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">leiden20</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>There are 15 clusters, although cluster 7 contains only 3 cells and cluster 8 contains only 1 cell. The t-SNE plot shows cells color-coded by cluster membership:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;leiden20&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;leiden20&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+</ul>
+</div>
+</details>
+</div>
+<h2 id="assessing-cluster-behaviour">Assessing cluster behaviour<a class="headerlink" href="#assessing-cluster-behaviour" title="Permanent link">&para;</a></h2>
+<p>A variety of metrics are available to aid us in assessing the behaviour of a particular clustering method on our data. These can help us in assessing how well defined different clusters within a single clustering are in terms of the relatedness of cells within the cluster and the how well separated that cluster is from cells in other clusters, and to compare the results of different clustering methods or parameter values (e.g. different values for k).</p>
+<p>We will consider “Silhouette width” and “Modularity”. </p>
+<h3 id="silhouette-width">Silhouette width<a class="headerlink" href="#silhouette-width" title="Permanent link">&para;</a></h3>
+<p>The silhouette width (so named after the look of the traditional graph for plotting the results) is a measure of how closely related cells within cluster are to one another versus how closely related cells in the cluster are to cells in other clusters. This allows us to assess cluster separation.</p>
+<p>For each cell in the cluster we calculate the the average distance to all other cells in the cluster and the average distance to all cells not in the cluster. The cells silhouette width is the difference between these divided by the maximum of the two values. Cells with a large silhouette are strongly related to cells in the cluster, cells with a negative silhouette width are more closely related to other clusters.</p>
+<p>We will use the `approxSilhouette`` function from the bluster package. The resulting table gives us the silhouette width for each cell, the cluster it belongs to, and which other cluster it is most closely related to.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">sil.approx</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">approxSilhouette</span><span class="p">(</span><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">),</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">                               </span><span class="n">clusters</span><span class="o">=</span><span class="n">sce</span><span class="o">$</span><span class="n">leiden20</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">sil.approx</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">SCALEFUN</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">scale_fill_manual</span>
+</code></pre></div></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">plotSilBeeswarm</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">silDat</span><span class="p">){</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="n">silTab</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">silDat</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="nf">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="nf">mutate</span><span class="p">(</span><span class="n">closestCluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">ifelse</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="nf">factor</span><span class="p">())</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">  </span><span class="n">plt</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">silTab</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">      </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">colour</span><span class="o">=</span><span class="n">closestCluster</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">        </span><span class="n">ggbeeswarm</span><span class="o">::</span><span class="nf">geom_quasirandom</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">&quot;smiley&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="o">=</span><span class="m">0.6</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">        </span><span class="nf">theme_bw</span><span class="p">()</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">  </span><span class="n">plt</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">scater</span><span class="o">:::</span><span class="nf">.resolve_plot_colours</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span><span class="w"> </span><span class="n">silTab</span><span class="o">$</span><span class="n">closestCluster</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;closestCluster&quot;</span><span class="p">)</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">  </span><span class="n">plt</span>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="p">}</span>
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a>
+<a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="n">p1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotSilBeeswarm</span><span class="p">(</span><span class="n">sil.approx</span><span class="p">)</span>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="n">p2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="w">                     </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a><span class="w">                     </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;leiden20&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a><span class="w">                     </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;leiden20&quot;</span><span class="p">)</span>
+<a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a><span class="n">p1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">p2</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/62-clustering-Silhouettewidth-2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/62-clustering-Silhouettewidth-2.png" /></a></p>
+</div>
+<details class="r-project-2">
+<summary>We could also look at the correspondence between different clusters by plotting these numbers on a grid showing for each cluster number of cells in that cluster that are closer to another cluster, colouring each tile by the proportion of the total cells in the cluster that it contains. Ideally we would like to see a strong diagonal band and only a few off-diagonal tiles containing small number of cells.</summary>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">plotSilGrid</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">silDat</span><span class="p">){</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span><span class="n">silDat</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span><span class="nf">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span><span class="nf">mutate</span><span class="p">(</span><span class="n">closestCluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">ifelse</span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="nf">factor</span><span class="p">())</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span><span class="nf">count</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">closestCluster</span><span class="p">,</span><span class="w">  </span><span class="n">name</span><span class="o">=</span><span class="s">&quot;olap&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span><span class="nf">group_by</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span><span class="nf">mutate</span><span class="p">(</span><span class="n">total</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">olap</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">    </span><span class="nf">mutate</span><span class="p">(</span><span class="n">proportion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">olap</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">total</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="w">    </span><span class="nf">mutate</span><span class="p">(</span><span class="n">proportion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">ifelse</span><span class="p">(</span><span class="n">cluster</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">closestCluster</span><span class="p">,</span><span class="w"> </span><span class="n">proportion</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">proportion</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="w">    </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">closestCluster</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">      </span><span class="nf">geom_tile</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">proportion</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">      </span><span class="nf">geom_text</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">olap</span><span class="p">),</span><span class="w"> </span><span class="n">size</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="w">      </span><span class="nf">scale_fill_gradientn</span><span class="p">(</span><span class="n">colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;#fc8d59&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;#ffffbf&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;#91cf60&quot;</span><span class="p">),</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a><span class="w">                            </span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-1</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a><span class="w">      </span><span class="nf">geom_vline</span><span class="p">(</span><span class="n">xintercept</span><span class="o">=</span><span class="nf">seq</span><span class="p">(</span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="m">30.5</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="o">=</span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a><span class="w">      </span><span class="nf">geom_hline</span><span class="p">(</span><span class="n">yintercept</span><span class="o">=</span><span class="nf">seq</span><span class="p">(</span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="m">30.5</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="o">=</span><span class="m">1</span><span class="p">),</span><span class="w"> </span><span class="n">colour</span><span class="o">=</span><span class="s">&quot;lightgrey&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">linetype</span><span class="o">=</span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="w">      </span><span class="nf">guides</span><span class="p">(</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="w">      </span><span class="nf">theme</span><span class="p">(</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a><span class="w">          </span><span class="n">aspect.ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a><span class="w">          </span><span class="n">panel.background</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">element_blank</span><span class="p">())</span>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a><span class="p">}</span>
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a><span class="nf">plotSilGrid</span><span class="p">(</span><span class="n">sil.approx</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/63-clustering-correspondence-bw-clusters.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/63-clustering-correspondence-bw-clusters.png" /></a></p>
+</details>
+<details class="r-project-2">
+<summary>From above plots we can see that clusters 7, 8 and 12 appear to have a good degree of separation, however, clusters 7 and 8 only contains few cells, whilst there are many cells in other clusters that appear closer to them than they are to their assigned cluster. Perhaps clusters 7 and 8 needs to be merged with cluster 1. Let’s do the same plots with the walktrap clusters generated with k=15.</summary>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">sil.approx</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">approxSilhouette</span><span class="p">(</span><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">),</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">                               </span><span class="n">clusters</span><span class="o">=</span><span class="n">sce</span><span class="o">$</span><span class="n">walktrap15</span><span class="p">)</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">wp1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotSilBeeswarm</span><span class="p">(</span><span class="n">sil.approx</span><span class="p">)</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="n">wp2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">                     </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">                     </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;walktrap15&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">                     </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;walktrap15&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="n">wp3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotSilGrid</span><span class="p">(</span><span class="n">sil.approx</span><span class="p">)</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="n">wp1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">wp2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">wp3</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/64-clustering-walktrapclusters-k15.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/64-clustering-walktrapclusters-k15.png" /></a></p>
+</details>
+<details class="r-project-2">
+<summary>This clustering appears to have generated a set of clusters with slightly better separatedness than the Leiden method with a k of 20. And again with the louvain clusters:</summary>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">sil.approx</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">approxSilhouette</span><span class="p">(</span><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">),</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">                               </span><span class="n">clusters</span><span class="o">=</span><span class="n">sce</span><span class="o">$</span><span class="n">louvain15</span><span class="p">)</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="n">lp1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotSilBeeswarm</span><span class="p">(</span><span class="n">sil.approx</span><span class="p">)</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="n">lp2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">                     </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="w">                     </span><span class="n">colour_by</span><span class="o">=</span><span class="s">&quot;louvain15&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="w">                     </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;louvain15&quot;</span><span class="p">)</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="n">lp3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotSilGrid</span><span class="p">(</span><span class="n">sil.approx</span><span class="p">)</span>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="n">lp1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lp2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lp3</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/65-clustering-walktrapk15-withlouvain.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/65-clustering-walktrapk15-withlouvain.png" /></a></p>
+</details>
+<h3 id="modularity-to-assess-cluster-quality">Modularity to assess cluster quality<a class="headerlink" href="#modularity-to-assess-cluster-quality" title="Permanent link">&para;</a></h3>
+<p>As mentioned earlier, the modularity metric is used in evaluating the separatedness of clusters. Some of the clustering algorithms, e.g. Louvain, seek to optimise this for the entire NN graph as part of their cluster detection. Modularity is a ratio between the observed weights of the edges within a cluster versus the expected weights if the edges were randomly distributed between all nodes. Rather than calculating a single modularity value for the whole graph, we can instead calculate a pair-wise modularity value between each pair of clusters using the pairwiseModularity function from the bluster package. For this we need to have the graph from the clustering, so we will rerun the walktrap clustering with k=15 to obtain this. We can plot the resulting ratios on a heatmap. We would expect the highest modularity values to be on the diagonal.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">walktrap15</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">                           </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">                           </span><span class="n">BLUSPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SNNGraphParam</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">15</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">                                                     </span><span class="n">cluster.fun</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;walktrap&quot;</span><span class="p">),</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">                           </span><span class="n">full</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="n">g</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">walktrap15</span><span class="o">$</span><span class="n">objects</span><span class="o">$</span><span class="n">graph</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="n">ratio</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pairwiseModularity</span><span class="p">(</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="n">walktrap15</span><span class="o">$</span><span class="n">clusters</span><span class="p">,</span><span class="w"> </span><span class="n">as.ratio</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="n">hm1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pheatmap</span><span class="p">(</span><span class="nf">log2</span><span class="p">(</span><span class="n">ratio</span><span class="m">+1</span><span class="p">),</span>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">         </span><span class="n">cluster_rows</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">         </span><span class="n">cluster_cols</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="w">         </span><span class="n">color</span><span class="o">=</span><span class="nf">colorRampPalette</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;blue&quot;</span><span class="p">))(</span><span class="m">100</span><span class="p">))</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/66-clustering-modularity-assess-1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/66-clustering-modularity-assess-1.png" width="400" /></a></center></p>
+<ul>
+<li>We can compare this to the silhouette width grid</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">wp4</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplotify</span><span class="o">::</span><span class="nf">as.ggplot</span><span class="p">(</span><span class="n">hm1</span><span class="p">)</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="n">wp2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">wp3</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">wp4</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/67-clustering-modularity-assess-2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/67-clustering-modularity-assess-2.png" /></a></p>
+<ul>
+<li>Largely, this reflects what we saw from the silhouette widths, but also reveals some additional inter-connectedness between other clusters. We can also visualise this as network graph where nodes are clusters and the edge weights are the modularity.</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">cluster.gr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">igraph</span><span class="o">::</span><span class="nf">graph_from_adjacency_matrix</span><span class="p">(</span><span class="nf">log2</span><span class="p">(</span><span class="n">ratio</span><span class="m">+1</span><span class="p">),</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">                                                  </span><span class="n">mode</span><span class="o">=</span><span class="s">&quot;upper&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">                                                  </span><span class="n">weighted</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">diag</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="nf">set.seed</span><span class="p">(</span><span class="m">11001010</span><span class="p">)</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="nf">plot</span><span class="p">(</span><span class="n">cluster.gr</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="w">     </span><span class="n">edge.width</span><span class="o">=</span><span class="n">igraph</span><span class="o">::</span><span class="nf">E</span><span class="p">(</span><span class="n">cluster.gr</span><span class="p">)</span><span class="o">$</span><span class="n">weight</span><span class="o">*</span><span class="m">5</span><span class="p">,</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">     </span><span class="n">layout</span><span class="o">=</span><span class="n">igraph</span><span class="o">::</span><span class="n">layout_with_lgl</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/68-clustering-modularity-networkgraph.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/68-clustering-modularity-networkgraph.png" width="500" /></a></center></p>
+</div>
+<h3 id="comparing-two-sets-of-clusters">Comparing two sets of clusters<a class="headerlink" href="#comparing-two-sets-of-clusters" title="Permanent link">&para;</a></h3>
+<p>We can assess the concordance between different clustering methods to get a better idea of how they eachtreat the data, e.g. does one cluster from one method equate to just one cluster in the other or is it a combination of different clusters. This may be revealing about the underlying biology. We will use the Jaccard index as measure of concordance between clusters. A value of 1 represents perfect concordance between clusters (i.e. they contain exactly the same cells).</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">jacc.mat</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">linkClustersMatrix</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">louvain15</span><span class="p">,</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">walktrap15</span><span class="p">)</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="nf">rownames</span><span class="p">(</span><span class="n">jacc.mat</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">paste</span><span class="p">(</span><span class="s">&quot;Louvain&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">jacc.mat</span><span class="p">))</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="nf">colnames</span><span class="p">(</span><span class="n">jacc.mat</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">paste</span><span class="p">(</span><span class="s">&quot;Walktrap&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">colnames</span><span class="p">(</span><span class="n">jacc.mat</span><span class="p">))</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="nf">pheatmap</span><span class="p">(</span><span class="n">jacc.mat</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="o">=</span><span class="n">viridis</span><span class="o">::</span><span class="nf">viridis</span><span class="p">(</span><span class="m">100</span><span class="p">),</span><span class="w"> </span><span class="n">cluster_cols</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_rows</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/69-clustering-comparing-2-setsofclusters.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/69-clustering-comparing-2-setsofclusters.png" width="500" /></a></center></p>
+<div class="admonition note">
+<p>We can see that Louvain clusters 2, 6, 7, and 9 are equivalent to walktrap clusters 14, 7, 12, and 11 respectively. The remaining Louvain clusters are combinations of cells from various walktrap clusters. We may want to look at marker genes for these clusters to assess what these two different views are telling us about the biology.</p>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../6/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 6. Batch correction and data set integration">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                6. Batch correction and data set integration
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../8/" class="md-footer__link md-footer__link--next" aria-label="Next: 8. Identification of cluster marker genes">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                8. Identification of cluster marker genes
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Analysis of single cell RNA-seq data workshop material is licensed under a <a rel="noopener" target="_blank" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License v3.0</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

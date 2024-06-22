@@ -1,0 +1,1114 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Genomics Aotearoa & NeSI">
+      
+      
+        <link rel="canonical" href="https://genomicsaotearoa.github.io/scRNA-seq-data-analysis/episodes/9.2/">
+      
+      
+        <link rel="prev" href="../9.1/">
+      
+      
+      
+      <link rel="icon" href="../../theme_images/nesi_ga.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>10. Differential Abundance - Analysis of single cell RNA-seq data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Mukta";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#10-differential-abundance" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+<!-- Custom Banner -->
+<div class="banner">
+    <p style="color:rgb(250, 246, 246); display:inline;font-size: 160%;">This repository is in the early stages of development (Beta Version)</p>
+</div>
+
+<!-- Original Header -->
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-header__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Analysis of single cell RNA-seq data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              10. Differential Abundance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-nav__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    Analysis of single cell RNA-seq data
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Episodes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Episodes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../0/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Alignment and feature counting with Cell Ranger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. QC and Exploratory Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Normalisation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. sctransform: Variance Stabilising Transformation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. Feature Selection and Dimensionality Reduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../6/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    6. Batch correction and data set integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../7/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    7. Clustering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../8/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    8. Identification of cluster marker genes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    9. Differential expression analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    10. Differential Abundance
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    10. Differential Abundance
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#differential-abundance-between-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Differential abundance between conditions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#construct-knn-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      Construct KNN graph
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-neighbourhoods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define neighbourhoods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#counting-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Counting cells
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neighbourhood-connectivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Neighbourhood connectivity
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-da-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running DA tests
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inspecting-da-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inspecting DA results
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#differential-abundance-between-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Differential abundance between conditions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#construct-knn-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      Construct KNN graph
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-neighbourhoods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define neighbourhoods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#counting-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      Counting cells
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neighbourhood-connectivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Neighbourhood connectivity
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-da-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running DA tests
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inspecting-da-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inspecting DA results
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="10-differential-abundance">10. Differential Abundance<a class="headerlink" href="#10-differential-abundance" title="Permanent link">&para;</a></h1>
+<p>In the previous section we discussed how we can perform differential expression analysis using pseudo-bulk samples, when multiple biological replicates are available in a multi-condition experiment. Differential expression analysis addresses the question of whether a gene has a different average expression between the two groups being compared. However, another useful question to address is whether the cell composition also differs between conditions. We could imagine, for example, that natural killer cells are more abundant in leukemia samples than in healthy samples.</p>
+<p>This type of analysis is referred to as <strong>differential abundance analysis</strong>.</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">Setup</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># load packages</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nf">library</span><span class="p">(</span><span class="n">BiocParallel</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nf">library</span><span class="p">(</span><span class="n">scran</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nf">library</span><span class="p">(</span><span class="n">scater</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nf">library</span><span class="p">(</span><span class="n">miloR</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nf">library</span><span class="p">(</span><span class="n">patchwork</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># load the SCE object</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;R_objects/Caron_clustered.PBMMCandETV6RUNX1.rds&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="c1"># check the contents of the object</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">sce</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># plot UMAP done on the batch-corrected data</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UMAP_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<h2 id="differential-abundance-between-conditions">Differential abundance between conditions<a class="headerlink" href="#differential-abundance-between-conditions" title="Permanent link">&para;</a></h2>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p>One method to perform DA analysis is to simply count how many cells occur in each label + condition combination and then test for differences in the counts between the two conditions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">sce</span><span class="o">$</span><span class="n">label</span><span class="p">,</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>As these are count data, statistical methods used in flow-cytometry have been adapted to test for differences in cell abundance from such a matrix of counts. </li>
+<li>However, this approach relies on a fixed set of clusters determined by us beforehand, which can be limiting in cases where the changes in abundance are more continuous (e.g. along a developmental trajectory, or where cell states are not completely discrete). To address this limitation, Dann et al. (2022) developed a method where cell abundance differences are tested along neighbourhoods of cells on a KNN graph. This means that the results aren’t dependent on our clustering results, and are instead treated in a more “continuous” way.</li>
+</ul>
+<p>This method has been implemented by the authors in the R/Bioconductor package MiloR, which we cover in this section. Starting from a graph that faithfully recapitulates the biology of the cell population, the Milo analysis consists of 3 steps:</p>
+<ul>
+<li>Building a k-nearest neighbours (KNN) graph</li>
+<li>Sampling representative neighbourhoods in the graph (for computational efficiency)</li>
+<li>Testing for differential abundance of conditions in all neighbourhoods</li>
+<li>Accounting for multiple hypothesis testing using a weighted FDR procedure that accounts for the overlap of neighbourhoods</li>
+</ul>
+<p>The first step in the analysis is to turn our single cell object into a Milo object. This is very similar to the SingleCellExperiment object we’ve been working with so far, but also includes information about the neighbourhood graphs that are built during the analysis.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># create the Milo object can be simply converted from a SCE</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">milo</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">Milo</span><span class="p">(</span><span class="n">sce</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">milo</span>
+</code></pre></div>
+<ul>
+<li>Notice how there are now several slots with prefix `nhoods``, which we will explore as we go through the analysis.</li>
+</ul>
+</div>
+<h2 id="construct-knn-graph">Construct KNN graph<a class="headerlink" href="#construct-knn-graph" title="Permanent link">&para;</a></h2>
+<div class="admonition r-project-2">
+<p class="admonition-title">The first step in our analysis is to build a KNN graph from our cells. This is very similar to what we did earlier in the clustering session, except now the graph will be stored inside the object:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># add KNN graph to Milo object</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">milo</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">buildGraph</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">                   </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">                   </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">                   </span><span class="n">reduced.dim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">                   </span><span class="n">BPPARAM</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">MulticoreParam</span><span class="p">(</span><span class="m">4</span><span class="p">))</span>
+</code></pre></div>
+<p>A couple of things to note about this:</p>
+<ul>
+<li><code>k</code> is the number of nearest neighbours to build the graph. This can be adjusted depending on how much of a fine resolution you want. If you use too high a number, you will end up loosing resolution as a higher diversity of cells will be connected in the graph. On the other hand, if you use too low a number, you may increase noise in the data and loose statistical power, as only very few cells will be connected to each other in a neighbourhood. The author’s recommendation is to use a value of k as you did for clustering and UMAP visualisation - this is what we’ve done in this case.</li>
+<li><code>d</code> is the number of dimensions from our dimensionality reduction matrix to use. In this case we’re using the MNN-corrected matrix, which contains 50 dimensions, and we use all of them (50 is also the default, so we could have left this option out).</li>
+</ul>
+<p>The object now has a new object inside the graph slot, which a standard object type from the <a href="https://r.igraph.org/">igraph package:</a></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># the graph is stored as a standard igraph object</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nf">graph</span><span class="p">(</span><span class="n">milo</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<h2 id="define-neighbourhoods">Define neighbourhoods<a class="headerlink" href="#define-neighbourhoods" title="Permanent link">&para;</a></h2>
+<p>The next step in the analysis is to define cell neighbourhoods. This essentially consists of picking a focal cell and counting how many other cells it is connected to in the graph (and how many come from each group under comparison). However, if we did this for every single cell in the data, it could get computationally quite intractable. Instead, Milo implements a sampling step, where so-called “index cells” are sampled from the larger graph, and those will be the neighbourhoods used in the DA analysis.</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">This is done with the <code>makeNhodds()</code> function:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># sample index cells to define neighbourhoods</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">milo</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">makeNhoods</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">                   </span><span class="n">prop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.1</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">                   </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">60</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">                   </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">                   </span><span class="n">reduced_dims</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># check our object again</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">milo</span>
+</code></pre></div>
+Some things to note:</p>
+<ul>
+<li>prop is the proportion of cells to sample (the authors advise 0.1 - 0.2).</li>
+<li><code>k</code> and <code>d</code> should be set the same as the k value used to build the original KNN graph. These values will be used for the graph-sampling algorithm used behind the scenes.
+We can also see that our Milo object now has the nhoods slots populated. In this case, it indicates that the sampling algorithm picked 1575 index cells to form neighbourhoods for DA analysis.</li>
+</ul>
+<p>One good QC metric to check at this stage is to create a histogram of cell counts per neighbourhood. Like we said earlier, when we set the value of k to define our KNN graph, we want to make sure the value is not too low, such that most neighbourhoods have very few cells, nor for it to be so high that we have very large (and presumably heterogenous) neighbourhoods.</p>
+<p>Conveniently, MiloR has a plotting function just for this purpose:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># distribution of neighbourhood sizes</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nf">plotNhoodSizeHist</span><span class="p">(</span><span class="n">milo</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nf">geom_vline</span><span class="p">(</span><span class="n">xintercept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;salmon&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/88-dabundance-define-neigh.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/88-dabundance-define-neigh.png" width="500" /></a></center></p>
+<p>The authors of Milo have stated several different parameters of deciding if your histogram is correct. Either ‘peaking above 20’, ‘peaking between 50 and 100’ or ‘an average neighbourhood size over 5 x N_samples’. Realistically, all of these statements give numbers in the same ballpark and so we can make a judgement on our data. In our case, we can see that our histogram peaks at ~100, suggesting a good neighbourhood size. If this was not the case, we could re-run the analysis from the start, making a KNN graph with a higher/lower <code>k</code> value.</p>
+</div>
+<h2 id="counting-cells">Counting cells<a class="headerlink" href="#counting-cells" title="Permanent link">&para;</a></h2>
+<p>After defining our sample of neighbourhoods, the next step consists of counting how many cells there are in each neighbourhood for each sample replicate. In this step we need to define which column of our metadata we want to use to do the counting. We should count cells at the biological replicate leve, which in our case is stored in the SampleName column.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># count cells in each neighbourhood</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">milo</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">countCells</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">                   </span><span class="n">meta.data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">colData</span><span class="p">(</span><span class="n">milo</span><span class="p">),</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">                   </span><span class="n">samples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleName&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Milo now has a counts matrix</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nf">head</span><span class="p">(</span><span class="nf">nhoodCounts</span><span class="p">(</span><span class="n">milo</span><span class="p">))</span>
+</code></pre></div>
+<ul>
+<li>The dimensions of the counts matrix corresponds to the number of neighbourhoods (rows) and samples (columns), in our case a 1575 by 7 matrix.</li>
+</ul>
+</div>
+<h2 id="neighbourhood-connectivity">Neighbourhood connectivity<a class="headerlink" href="#neighbourhood-connectivity" title="Permanent link">&para;</a></h2>
+<p>There is one more step that we need to do before we are ready to run our DA analysis. It consists of calculating the distances between each neighbourhood. As we said, the neighbourhoods on our graph may partially overlap, so when Milo corrects our p-values for multiple testing, it takes into account the spatial dependence of our tests. For example, neighbourhoods that are closer to each other may have similar p-values, and so we should avoid penalising them too much, otherwise we will sacrifice statistical power.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># calculate distances between neighbourhoods - for p-value correction</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">milo</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">calcNhoodDistance</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span><span class="p">,</span><span class="w"> </span><span class="n">reduced.dim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>As before, the value of d (number of dimensions to consider from our MNN-corrected matrix) should be the same that was used for building our initial graph.</p>
+</div>
+<h2 id="running-da-tests">Running DA tests<a class="headerlink" href="#running-da-tests" title="Permanent link">&para;</a></h2>
+<p>Finally, we are ready to run the actual differential abundance step. Similarly to the pseudo-bulk appproach for differential expression, MiloR takes advantage of the edgeR package and its negative binomial linear model implementation. This provides a suitable statistical model to account for over-dispersed count data, as is common with these kind of datasets.</p>
+<p>First, we need to define a simple table with information about our samples - we will use this table to define our model formula (similarly to what we did in the differential expression step). In this case, we want to detect DA between our PBMMC and ETV6-RUNX1 sample groups, so we define a table based on those two groups. We could also include a batch column in this table, but to keep the demonstration simple we will skip this. We would normally do this if we know there is a batch effect that we want to account for it in DA testing.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># define a table for our model design</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">unique</span><span class="p">(</span><span class="nf">colData</span><span class="p">(</span><span class="n">milo</span><span class="p">)[,</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;SampleName&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SampleGroup&quot;</span><span class="p">)])</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nf">rownames</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">SampleName</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">sample_info</span>
+</code></pre></div>
+<ul>
+<li>Now we can do the DA test, explicitly defining our experimental design. In this case as discussed we will test the difference between sample groups. The testNhoods function calculates a Fold-change and corrected P-value for each neighbourhood, which indicates whether there is significant differential abundance between sample groups.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># run DA test</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">da_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">testNhoods</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">                         </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">SampleGroup</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">                         </span><span class="n">design.df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">                         </span><span class="n">reduced.dim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># results are returned as a data.frame</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">da_results</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">  </span><span class="nf">arrange</span><span class="p">(</span><span class="n">SpatialFDR</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">  </span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<h2 id="inspecting-da-results">Inspecting DA results<a class="headerlink" href="#inspecting-da-results" title="Permanent link">&para;</a></h2>
+<p>A good diagnostic plot to make after running our analysis is a histogram of p-values. We should expect a distribution with a peak close to 0 (corresponding to differentially abundant neighbourhoods) and tailing off towards 1. This blog article explains the different p-value histogram profiles you may see and what they can mean.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># p-value histogram</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nf">ggplot</span><span class="p">(</span><span class="n">da_results</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">PValue</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nf">geom_histogram</span><span class="p">(</span><span class="n">bins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/89-dabundance-inspectingDA-results.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/89-dabundance-inspectingDA-results.png" width="600" /></a></center></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Next, we can get an overview of our results as a volcano plot, marking a significance threshold of 10% FDR:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># volcano plot</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1"># each point in this plot corresponds to a neighbourhood (not a cell)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="nf">ggplot</span><span class="p">(</span><span class="n">da_results</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">logFC</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="nf">log10</span><span class="p">(</span><span class="n">SpatialFDR</span><span class="p">)))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span><span class="nf">geom_point</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FDR</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span><span class="nf">geom_hline</span><span class="p">(</span><span class="n">yintercept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/90-dabundance-DAinspect-volcanoplot.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="imahe" src="../../r_images/90-dabundance-DAinspect-volcanoplot.png" width="600" /></a></center></p>
+</div>
+<p>As we can see, several neighbourhoods fall below our FDR threshold, indicating significant differential abundance of cells between PBMMC and ETV6-RUNX1 samples.</p>
+<p>There is an unsual discontinuity in our logFC axis, suggesting a sudden change in abundance in some of our neighbourhoods. We can get a better idea of the fold changes by visualising them as a graph for our neighbourhoods (rather than the original single-cell graph, which would be too big to display). We can then super-impose this graph on our original UMAP (or t-SNE), to compare with our original analysis.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># build neighbourhood graph embedding</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">milo</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">buildNhoodGraph</span><span class="p">(</span><span class="n">milo</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># our original UMAP with our previously annotated cell labels</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">umap_plot</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">                            </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UMAP_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">                            </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">                            </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># the neighbourhood map adjusted to match UMAP embedding</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="n">nh_graph_plot</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">plotNhoodGraphDA</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">                                  </span><span class="n">da_results</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">                                  </span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UMAP_corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">                                  </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="c1"># the two plots together side-by-side</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="n">umap_plot</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">nh_graph_plot</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">  </span><span class="nf">plot_layout</span><span class="p">(</span><span class="n">guides</span><span class="o">=</span><span class="s">&quot;collect&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</div>
+<p>On the left we have our original UMAP, with cell/cluster annotations we did previously (by standard clustering and using known marker genes to manually annotate our cells). On the right we have the Milo neighbourhood graph, where each node represents a neighbourhood, coloured by the log fold-change in abundance between PBMMC and ETV6-RUNX1 samples (positive values represent higher abundance in ETV6-RUNX1, and vice-versa). We can see, for example, a cluster of cells with negative log fold changes around our large B cell cluster, which likely explains the discontinuity in values we saw earlier in our volcano plot.</p>
+<p>Although we have annotations for our cells, these annotations at the moment are not present in the differential abundance table:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nf">head</span><span class="p">(</span><span class="n">da_results</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># annotate our neighbourhood DA results with our cell labels</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">da_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">annotateNhoods</span><span class="p">(</span><span class="n">milo</span><span class="p">,</span><span class="w"> </span><span class="n">da_results</span><span class="p">,</span><span class="w"> </span><span class="n">coldata_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nf">head</span><span class="p">(</span><span class="n">da_results</span><span class="p">)</span>
+</code></pre></div></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">The result includes the fraction of cells in the neighbourhood that shared that label. We can look at the distribution of this fraction as a quality check:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># histogram of fraction of cells in the neighbourhood with the same label</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nf">ggplot</span><span class="p">(</span><span class="n">da_results</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">label_fraction</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span><span class="nf">geom_histogram</span><span class="p">(</span><span class="n">bins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span><span class="p">)</span>
+</code></pre></div>
+<p><center><a class="glightbox" href="../../r_images/92-dabundance-inspect-histogram-of-fraction.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/92-dabundance-inspect-histogram-of-fraction.png" width="600" /></a></center></p>
+</div>
+<p>We should expect the plot to be very biased towards 1, as is seen. This makes sense, since Milo’s neighbourhoods should be very similar to our previously-defined clusters. After all, both our clustering and Milo used KNN graphs as the starting point, and we’ve used the same settings for the k and d parameters in both steps of our analysis.</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">Despite most neighbourhoods being homogenous, some seem to have mixed labels. We can highlight these in our results table:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># add &quot;mixed&quot; label to neighbourhoods with less 70% consistency</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">da_results</span><span class="o">$</span><span class="n">label</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ifelse</span><span class="p">(</span><span class="n">da_results</span><span class="o">$</span><span class="n">label_fraction</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.7</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">                           </span><span class="s">&quot;Mixed&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">                           </span><span class="n">da_results</span><span class="o">$</span><span class="n">label</span><span class="p">)</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="nf">head</span><span class="p">(</span><span class="n">da_results</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Finally, we can visualise the distribution of DA fold changes in different labels.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># distribution of logFC across neighbourhood labels</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nf">plotDAbeeswarm</span><span class="p">(</span><span class="n">da_results</span><span class="p">,</span><span class="w"> </span><span class="n">group.by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;label&quot;</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/93-dabundance-DA-fold-changes.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/93-dabundance-DA-fold-changes.png" /></a></p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../9.1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 9. Differential expression analysis">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                9. Differential expression analysis
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Analysis of single cell RNA-seq data workshop material is licensed under a <a rel="noopener" target="_blank" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License v3.0</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

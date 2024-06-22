@@ -1,0 +1,1542 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Genomics Aotearoa & NeSI">
+      
+      
+        <link rel="canonical" href="https://genomicsaotearoa.github.io/scRNA-seq-data-analysis/episodes/6/">
+      
+      
+        <link rel="prev" href="../5/">
+      
+      
+        <link rel="next" href="../7/">
+      
+      
+      <link rel="icon" href="../../theme_images/nesi_ga.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>6. Batch correction and data set integration - Analysis of single cell RNA-seq data</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Mukta";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#6-batch-correction-and-data-set-integration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+<!-- Custom Banner -->
+<div class="banner">
+    <p style="color:rgb(250, 246, 246); display:inline;font-size: 160%;">This repository is in the early stages of development (Beta Version)</p>
+</div>
+
+<!-- Original Header -->
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-header__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Analysis of single cell RNA-seq data
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              6. Batch correction and data set integration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Analysis of single cell RNA-seq data" class="md-nav__button md-logo" aria-label="Analysis of single cell RNA-seq data" data-md-component="logo">
+      
+  <img src="../../theme_images/nesi_ga.png" alt="logo">
+
+    </a>
+    Analysis of single cell RNA-seq data
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GenomicsAotearoa/scRNA-seq-data-analysis" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GenomicsAotearoa/scRNA-seq-data-analysis
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Episodes
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Episodes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../0/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Alignment and feature counting with Cell Ranger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. QC and Exploratory Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Normalisation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. sctransform: Variance Stabilising Transformation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. Feature Selection and Dimensionality Reduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    6. Batch correction and data set integration
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    6. Batch correction and data set integration
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-data-set-pbmmc_1-technical-replicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example data set - PBMMC_1 technical replicates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Preparation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualising-uncorrected-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualising Uncorrected Data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correct-the-data-mutual-nearest-neighbour-mnn" class="md-nav__link">
+    <span class="md-ellipsis">
+      Correct the data - Mutual Nearest Neighbour (MNN)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualising-the-corrected-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualising the Corrected Data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-quickcorrect-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      The quickCorrect() function
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple batches
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multiple batches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specifying-merge-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifying merge order
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correction-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Correction Diagnostics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Correction Diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mixing-between-batches-bar-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixing Between Batches - Bar plots
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mixing-between-batches-variance-of-batch-abundancies-in-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixing Between Batches - variance of batch abundancies in clusters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preserving-biological-heterogeneity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preserving Biological Heterogeneity
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preserving Biological Heterogeneity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nesting-of-before-and-after-correction-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nesting of before and after correction clusters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjusted-rand-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adjusted Rand index
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mnn-specific-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      MNN specific test
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../7/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    7. Clustering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../8/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    8. Identification of cluster marker genes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    9. Differential expression analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    10. Differential Abundance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-data-set-pbmmc_1-technical-replicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example data set - PBMMC_1 technical replicates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Preparation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualising-uncorrected-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualising Uncorrected Data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correct-the-data-mutual-nearest-neighbour-mnn" class="md-nav__link">
+    <span class="md-ellipsis">
+      Correct the data - Mutual Nearest Neighbour (MNN)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualising-the-corrected-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualising the Corrected Data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-quickcorrect-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      The quickCorrect() function
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-batches" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple batches
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multiple batches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specifying-merge-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifying merge order
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correction-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Correction Diagnostics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Correction Diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mixing-between-batches-bar-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixing Between Batches - Bar plots
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mixing-between-batches-variance-of-batch-abundancies-in-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixing Between Batches - variance of batch abundancies in clusters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preserving-biological-heterogeneity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preserving Biological Heterogeneity
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preserving Biological Heterogeneity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nesting-of-before-and-after-correction-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nesting of before and after correction clusters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjusted-rand-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adjusted Rand index
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mnn-specific-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      MNN specific test
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="6-batch-correction-and-data-set-integration">6. Batch correction and data set integration<a class="headerlink" href="#6-batch-correction-and-data-set-integration" title="Permanent link">&para;</a></h1>
+<div class="admonition quote">
+<p>Often, single-cell experiments are done by processing samples in multiple batches. This may be related to logistical constraints such as the inability to run all experimental conditions in parallel, or more extreme cases where samples are processed in different laboratories, by different people and even sequenced with different technologies (e.g. samples from human patients collected in different hospitals). These differences across sample batches very often result in global gene expression differences across those batches. Since batch-to-batch transcriptomic differences are likely unrelated to biological differences, we would ideally want “remove” them before drawing inferences about our cell populations.</p>
+<p>Biases due to batch effects are not new to single-cell RNA-seq. Indeed, several methods have been previously developed for standard bulk RNA-seq approaches. Some of those approaches rely on linear models that “regress out” the batch effect, assuming that the cell composition is similar across batches. However, in single-cell RNA-seq we may very often expect changes in cell compositions across batches (e.g. in our course data we have data from cancer samples such as ETV6-RUNX as well as a reference panel of healthy blood cells, PBMMCs). Therefore, methods are necessary that can deal with with heterogeneity across batches.</p>
+<p>In recent years, several methods have been developed to deal with this challenge (<a href="https://www.scrna-tools.org/tools?sort=name&amp;cats=Integration">too many to list here!</a>). Some of the most popular ones include the Mutual Nearest Neighbours (MNN) algorithm, a Principal Components Analysis-based clustering method implemented in the package HARMONY and a method that combines Canonical Correlation Analysis (CCC) and MNN implemented in the package Seurat 3. These methods have been shown to perform well in several benchmark studies (e.g. Luecken et al 2022 and Tran et al 2020), although one important message from these studies is that no <strong>single method is universally the best in all situations</strong>. For example, some methods may be better at preserving small populations of cells as separate groups in the integrated data at the cost of poorer overall integration, while others may be better at removing batch effects at the cost of also removing some biological signal.</p>
+<p>In this section we will apply the <strong>Mutual Nearest Neighbours (MNN)</strong> algorithm, which is readily available to use with the `SingleCellExperiment`` object we’ve been working with so far. However, other methods can be applied to the data in a similar manner (each package may use a slightly different syntax, but they mostly start with either a matrix of counts or a PCA projection). Therefore, what we will explore in this section - visualisation of the integrated data, looking at mixture of cell populations, etc. - can be done with those other methods as well.</p>
+</div>
+<h2 id="example-data-set-pbmmc_1-technical-replicates">Example data set - PBMMC_1 technical replicates<a class="headerlink" href="#example-data-set-pbmmc_1-technical-replicates" title="Permanent link">&para;</a></h2>
+<p>To demonstrate the integration process, we will use two samples from the Caron dataset that will illustrate the purposes of dataset integration with batch correction. One is the PBMMC_1 sample that we have already seen, the other is a technical replicate derived from the same sample material (we will use our previous SCE object in a later exercise).</p>
+<p>Whilst the two samples come from distinct 10X runs they are derived from the same starting material and therefore, if there was no batch effect, they should be identical. These samples have been processed as discussed up until this point in the course:</p>
+<ul>
+<li>Raw counts were imported from the cellranger output folder (using <code>DropletUtils::read10xCounts()</code>).</li>
+<li>Basic quality filtering was performed in each batch to remove cells that were outliers for total counts, number of detected genes and high percentage of mitochondrial counts (using <code>scuttle::quickPerCellQC()</code>).</li>
+<li>Reads were log-normalised using the deconvolution method (using <code>scuttle::computePooledFactors()</code>).</li>
+</ul>
+<p>We already have the necessary objects prepared, and load them for this session:</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">library</span><span class="p">(</span><span class="n">scater</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nf">library</span><span class="p">(</span><span class="n">scran</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nf">library</span><span class="p">(</span><span class="n">batchelor</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nf">library</span><span class="p">(</span><span class="n">bluster</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nf">library</span><span class="p">(</span><span class="n">pheatmap</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nf">library</span><span class="p">(</span><span class="n">magrittr</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">sce_rep1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;R_objects/PBMMC_1a_dimRed.rds&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">sce_rep2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;R_objects/PBMMC_1b_dimRed.rds&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<ul>
+<li>First we should add information about which technical replicate each sample is. This is added as a new column in the colData DataFrame of the object.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">)</span><span class="o">$</span><span class="n">batch</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nf">colData</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">)</span><span class="o">$</span><span class="n">batch</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+</code></pre></div>
+</div>
+<h2 id="data-preparation">Data Preparation<a class="headerlink" href="#data-preparation" title="Permanent link">&para;</a></h2>
+<div class="admonition circle-info"></div>
+<p>Before the data integration step, we need to prepare our data (we will later see how we can run all these steps with a single function, but it is good to see all the steps individually).</p>
+<ol>
+<li>First we need to fit a mean-variance model to each data set separately (using <code>scran::modelGeneVar()</code>). This will be used later to identify highly-variable genes (HVGs) in each batch.</li>
+<li>Subset our objects to only include the set of genes that are common in both samples (in case different genes were filtered out).</li>
+<li>Rescale the batches to account for different sequencing depths. We had previously log-normalised the counts in each batch. However, this did not take into account differences in total sequencing depth across different batches. This step therefore helps to bring the different batches to a “similar scale”, which helps with the data integration step.</li>
+<li>Select variable genes (feature selection), by averaging the variance previously estimated in each batch separately. This will gives us genes that are highly variable across both batches.</li>
+</ol>
+<div class="admonition r-project-2">
+<p class="admonition-title">Fit mean-variance mode to each data set</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">gene_var_rep1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">modelGeneVar</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">gene_var_rep2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">modelGeneVar</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Identify common genes and subset both the sce objects and the mean-variance model objects</p>
+<p>The two samples have been QC’d and filtered independently. Removing undetected genes from each set independently has results in slightly different genes being retained in each dataset:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nf">nrow</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nf">nrow</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nf">sum</span><span class="p">(</span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">)</span><span class="o">$</span><span class="n">ID</span><span class="o">%in%</span><span class="nf">rowData</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">)</span><span class="o">$</span><span class="n">ID</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">common_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">intersect</span><span class="p">(</span><span class="nf">rownames</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">),</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">))</span>
+</code></pre></div></p>
+<ul>
+<li>Subset the SCE object</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">sce_rep1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce_rep1</span><span class="p">[</span><span class="n">common_genes</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">sce_rep2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce_rep2</span><span class="p">[</span><span class="n">common_genes</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+</code></pre></div>
+<ul>
+<li>Subset the mean-variance results</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">gene_var_rep1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">gene_var_rep1</span><span class="p">[</span><span class="n">common_genes</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">gene_var_rep2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">gene_var_rep2</span><span class="p">[</span><span class="n">common_genes</span><span class="p">,</span><span class="w"> </span><span class="p">]</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Rescale and combine data</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">rescaled_sces</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">multiBatchNorm</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">,</span><span class="w"> </span><span class="n">sce_rep2</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">cbind</span><span class="p">(</span><span class="n">rescaled_sces</span><span class="p">[[</span><span class="m">1</span><span class="p">]],</span><span class="w"> </span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">             </span><span class="n">rescaled_sces</span><span class="p">[[</span><span class="m">2</span><span class="p">]])</span>
+</code></pre></div>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">Combine gene variance models and identify HVGs</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">gene_var_combined</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">combineVar</span><span class="p">(</span><span class="n">gene_var_rep1</span><span class="p">,</span><span class="w"> </span><span class="n">gene_var_rep2</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">hvgs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">gene_var_combined</span><span class="o">$</span><span class="n">bio</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="nf">sum</span><span class="p">(</span><span class="n">hvgs</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<h2 id="visualising-uncorrected-data">Visualising Uncorrected Data<a class="headerlink" href="#visualising-uncorrected-data" title="Permanent link">&para;</a></h2>
+<p>Before running the data integration procedure, it is always good to check how much of a problem the batch effect might be. This is typically done by visualising the combined data in a reduced dimensionality projection such as t-SNE or UMAP.</p>
+<p>Another strategy to check for batch effects, involves clustering the cells (we will cover cell clustering in detail later) and checking whether both batches are represented in each cluster. If clusters contain cells from only one of the clusters, this may indicate a batch effect is present.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">runPCA</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">subset_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hvgs</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">sce</span><span class="o">$</span><span class="n">cluster_uncorrected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;PCA&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">runTSNE</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;PCA&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_uncorrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_uncorrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;batch&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cluster_uncorrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;PCA&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">           </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;batch&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">           </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cluster_uncorrected&quot;</span><span class="p">)</span><span class="w">               </span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/41-batchcorrect-visualisinguncorrected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/41-batchcorrect-visualisinguncorrected.png" /></a></p>
+<ul>
+<li>We can also assess cluster occupancy data as a table.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nf">table</span><span class="p">(</span><span class="n">Cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">cluster_uncorrected</span><span class="p">,</span><span class="w"> </span><span class="n">Batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">batch</span><span class="p">)</span>
+</code></pre></div></li>
+</ul>
+</div>
+<div class="admonition quote">
+<p>As we can see from the t-SNE, cells seem to somewhat separate according to batch (although distinct groups of cells are still visible at a more global scale).</p>
+<p>We can also see that some of the clusters identified in the data contain an unbalanced number of cells from each batch.</p>
+<p>However, from the t-SNE, there is some suggestion that these could be the same cell type. Another example is cluster 7, which contains cells from both batches, but on the t-SNE there is still some within-batch separation of these cells (if we formed sub-clusters they would likely separate by batch).</p>
+<p>It is worth noting that, although this suggests a batch effect (and in the case of technical replicates this is a good assumption), there might be cases where there are genuine differences in cell populations across batches (e.g. if the different batches represent samples from different tissues).</p>
+<p>Data integration algorithms designed for single-cell RNA-seq do allow for unique cell types existing across batches, however, it’s always good to check the results of the integration using independent information (e.g. prior information about genes that are specific to particular cell types).</p>
+</div>
+<h2 id="correct-the-data-mutual-nearest-neighbour-mnn">Correct the data - Mutual Nearest Neighbour (MNN)<a class="headerlink" href="#correct-the-data-mutual-nearest-neighbour-mnn" title="Permanent link">&para;</a></h2>
+<p>The <em>Mutual Nearest Neighbours</em> (MNN) algorithm works by determining if pairs of cells from two different batches are within the top K closest neighbours of each other.</p>
+<div class="admonition image">
+<p class="admonition-title">Schematic of the MNN algorithm  - Reference: <a href="https://www.nature.com/articles/nbt.4091">Haghverdi et al 2018</a></p>
+<p>Here are the assumptions of this approach (taken from Haghverdi et al 2018):</p>
+<ol>
+<li>There is at least one cell population that is present in both batches,</li>
+<li>The batch effect is almost orthogonal [i.e. uncorrelated] to the biological subspace</li>
+<li>The batch-effect variation is much smaller than the biological-effect variation between different cell types</li>
+</ol>
+<p><center><a class="glightbox" href="../../r_images/batchcorrection-MNN.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/batchcorrection-MNN.png" width="600" /></a></center></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">We will use the `fastMNN()`` function. We will need to provide the following:</p>
+<ul>
+<li>The SCE object(s) with the log-normalised counts to correct.</li>
+<li>`batch`` - A variable specifying the batch labels for each cell (usually we include that information as a column in the colData slot of the object).</li>
+<li>`d`` - The number of dimensions to use from a PCA projection of the data (the method uses PCA values for computational efficiency - and it has also been shown to often perform better than using the full matrix of logcounts).</li>
+<li><code>k</code> - The number of cells to consider when calculating the mutual nearest neighbours between each pair of cells.</li>
+<li>`subset.row`` - The genes to use for the PCA step of the algorithm. We use the highly-variable genes determined earlier from the pooled mean-variance model.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">mnn_corrected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">fastMNN</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">                         </span><span class="n">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">batch</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">                         </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">50</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">                         </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">                         </span><span class="n">subset.row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hvgs</span><span class="p">)</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="n">mnn_corrected</span>
+</code></pre></div>
+</div>
+<p>The result of the function is a new <code>SingleCellExperiment</code> object with a “corrected” matrix in the reducedDims slot, containing corrected low-dimensional coordinates for each cell. This “corrected” matrix can be used in downstream analyses such as clustering.</p>
+<p>The new object also contains a “reconstructed” matrix in the assays slot. This can be viewed as per-gene corrected log-expression values, but should not be used for any quantitative analyses as the magnitude and even the direction of differences in expression between cells may not have been preserved.</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">We can add the “corrected” matrix to our original SCE object, so that we keep all the data together in the same object.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">reducedDim</span><span class="p">(</span><span class="n">mnn_corrected</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<details class="clipboard-question">
+<summary>How many neighbours (k) should we consider?</summary>
+<p>The answer to this question - as is often the case in bioinformatics! - is that this will depend on the dataset. One heuristic to use is to think about what is the minimum number a given cell type that you expect to be shared between the batches. For example, the value <code>k = 20</code> is approximately equivalent to assuming that we expect there to be a group of a least 20 cells of one type in one batch that have an equivalent group of 20 or more cells of the same type in the other batch.</p>
+<p>Sometimes, based on the analysis of known cell-specific marker genes, we may notice that some batch-specific clusters should have been merged, but are not. In those cases, increasing the number of k neighbours will result in a stronger integration (we are effectively increasing the chance that a given pair of cells are mutual neighbours of each other).</p>
+</details>
+<h2 id="visualising-the-corrected-data">Visualising the Corrected Data<a class="headerlink" href="#visualising-the-corrected-data" title="Permanent link">&para;</a></h2>
+<div class="admonition r-project-2">
+<p class="admonition-title">Now that we have batch corrected the data, we can visualise the impact of this using a tSNE as we did for the uncorrected data.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">sce</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">sce</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">runTSNE</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">               </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">               </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;batch&quot;</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">               </span><span class="n">text_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cluster_corrected&quot;</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/42-batchcorrect-visualise-corrected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/42-batchcorrect-visualise-corrected.png" /></a></p>
+</div>
+<p>From this new t-SNE, we can see that the cells from the two batches seem to be much better mixed with each other. There is still some apparent separation, which could indicate that we should use a higher value of k with <code>fastMNN()</code>, or could be real biological differences between the samples. If in doubt, it may be better to avoid over-correcting the data, and rather to come back to the analysis after we did some more investigation of what kind of genes separate those cells (a topic for the next session).</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">We can also compare the mixing of cells in the clusters before and after correction.</p>
+<p>We can confirm from this visualisation that there is more mixing of cells within a batch in the corrected data compared to the original one.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Uncorrected batches</label><label for="__tabbed_1_2">Corrected batches</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nf">data.frame</span><span class="p">(</span><span class="n">Cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="p">,</span><span class="w"> </span><span class="n">Batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">batch</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cluster</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nf">geom_bar</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Batch</span><span class="p">),</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fill&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MNN-uncorrected data&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="nf">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scales</span><span class="o">::</span><span class="n">percent</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/43-batchcorrect-UNCORRECTED-batches.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/43-batchcorrect-UNCORRECTED-batches.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nf">data.frame</span><span class="p">(</span><span class="n">Cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="p">,</span><span class="w"> </span><span class="n">Batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce</span><span class="o">$</span><span class="n">batch</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cluster</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nf">geom_bar</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Batch</span><span class="p">),</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fill&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MNN-corrected data&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">  </span><span class="nf">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scales</span><span class="o">::</span><span class="n">percent</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/44-batchcorrect-CORRECTED-batches.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/44-batchcorrect-CORRECTED-batches.png" /></a></p>
+</div>
+</div>
+</div>
+</div>
+<h2 id="the-quickcorrect-function">The <code>quickCorrect()</code> function<a class="headerlink" href="#the-quickcorrect-function" title="Permanent link">&para;</a></h2>
+<p>The <code>batchelor</code> package has made the data integration procedure easier by having a wrapper function called <code>quickCorrect``, which automates the individual steps we went through to prepare the data before MNN correction. This includes intersecting the batches for common genes, log-normalising the batches, and identifying highly variable genes across batches. By default,</code>quickCorrect` will use the fastMNN method, but you can change it to use other correction algorithms by modifying the PARAM argument (see more details in the function’s help page).</p>
+<div class="admonition r-project-2">
+<p class="admonition-title">Let’s visualise the results to check that it is similar to what we obtained previously.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">sce_quick_mnn</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">quickCorrect</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">,</span><span class="w"> </span><span class="n">sce_rep2</span><span class="p">)</span><span class="o">$</span><span class="n">corrected</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">sce_quick_mnn</span><span class="o">$</span><span class="n">batch</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="n">sce_quick_mnn</span><span class="o">$</span><span class="n">batch</span><span class="p">)</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">sce_quick_mnn</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span><span class="nf">runTSNE</span><span class="p">(</span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">  </span><span class="nf">plotTSNE</span><span class="p">(</span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;batch&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p><a class="glightbox" href="../../r_images/45-batchcorrect-quickcorrect.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/45-batchcorrect-quickcorrect.png" /></a></p>
+</div>
+<h2 id="multiple-batches">Multiple batches<a class="headerlink" href="#multiple-batches" title="Permanent link">&para;</a></h2>
+<p>The above example used only two samples (batches), but it will often be the case that we have many samples or batches. It is straightforward to simultaneously perform correction across &gt;2 batches with <code>quickCorrect()</code>, either by using the batch= option or by providing several separate `SingleCellExperiment`` objects. Lets try this out with all of the samples from the Caron dataset.</p>
+<div class="admonition clipboard-question">
+<p class="admonition-title">Exercise</p>
+<p>In this exercise we will work with a <code>SingleCellExperiment</code> that contains the 11 samples that we have worked with so far.</p>
+<p>This object has been processed as discussed in the previous sections, but we down-sampled the data to 500 cells per sample for processing speed (in real analysis you would not do this).</p>
+<p>Load the data:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">sce_all</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;R_objects/Caron_dimRed.500.rds&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p>You should then add the rest of the code in order to:</p>
+<ol>
+<li>Batch correct the data using the quickCorrect() wrapper, treating each individual sample as a batch. See the Help page (?quickCorrect) for details on how to specify batch when only providing one single cell experiment object.</li>
+<li>Add the “corrected” matrix from the new object into the “reducedDim” slot of the original single cell experiment object</li>
+<li>Plot a tSNE of your corrected data and compare it to the uncorrected data.</li>
+</ol>
+<p>Note that the object we have loaded already contains a tSNE computed from the uncorrected logcounts (in the default reducedDim slot called “tSNE”).</p>
+<details class="circle-check">
+<summary>Answer</summary>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+</div>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># obtain a batch-corrected SCE object</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">sce_all_corrected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">quickCorrect</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span><span class="n">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="o">$</span><span class="n">corrected</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># add the corrected matrix to the original object - to keep it all together</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">reducedDim</span><span class="p">(</span><span class="n">sce_all_corrected</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="c1">#  add a tSNE using the corrected data</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="nf">set.seed</span><span class="p">(</span><span class="m">323</span><span class="p">)</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="n">sce_all</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">runTSNE</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="w">                   </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">                   </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="c1"># visualise both corrected and uncorrected</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleName&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nf">plotReducedDim</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span><span class="n">dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;TSNE_corrected&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">colour_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SampleName&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</details>
+</div>
+<details class="file-code">
+<summary>Specifics of multiple batch correction: merge order</summary>
+<h3 id="specifying-merge-order">Specifying merge order<a class="headerlink" href="#specifying-merge-order" title="Permanent link">&para;</a></h3>
+<p>During the batch correction, batches are merged in a pairwise manner. If we have more than two batches, first two batches are merged to create a new cohort, then the next batch is merged with this new cohort, and so on until all batches have been integrated. The order is which this is done by default is the order in which the batches are provided to the command.</p>
+<p>Batch correction will work more effectively between batches with large number of cells and between batches that have many cells of the same cell type. As a result it is often beneficial to specify the order in which batches should be combined. If we are expecting differences in cell populations present between different sample groups it is probably advisable to integrate replicates within sample groups first, and then integrate the different sample groups.</p>
+<p>This can be specified using the merge.order argument of <code>fastMNN</code>. This, and any other <code>fastMNN</code> arguments you wish to control such as <code>d</code> or <code>k</code>, can be provided to <code>quickCorrect``` using it’s</code>Param = FastMnnParam()` argument.</p>
+<p>The merge.order argument should be provided a nested list object that determines the merge order. Please see the fastMNN help page for a detailed explanation of how this can be constructed. In short, each batch within a list will be merged (in the order provided) before batches in different lists are merged.</p>
+<p>In our case, we have four sample groups: ETV6-RUNX1, HHD, PBMMC, PRE-T. We might decide that it makes sense to integrate replicates from the same sample group before integrating between sample groups. To do this we want to integrate the samples in the following order</p>
+<div class="admonition circle-info">
+<p class="admonition-title">In our case, we have four sample groups: ETV6-RUNX1, HHD, PBMMC, PRE-T. We might decide that it makes sense to integrate replicates from the same sample group before integrating between sample groups. To do this we want to integrate the samples in the following order</p>
+</div>
+<ol>
+<li>
+<p>ETV6-RUNX1_1 + ETV6-RUNX1_2 &rarr; + ETV6-RUNX1_3 &rarr; + ETV6-RUNX1_4 &rarr; ETV6-RUNX1_batch</p>
+<ol>
+<li>HHD_1 + HHD_2 &rarr; HHD_batch</li>
+</ol>
+</li>
+<li>
+<p>PBMMC_1 &amp; PBMMC_2 &rarr; + PBMMC_3 &rarr; PBMMC_batch</p>
+</li>
+<li>
+<p>PRE-T_1 + PRE-T_2 &rarr; PRE-T_batch  </p>
+</li>
+<li>
+<p>ETV6-RUNX1_batch + HHD_batch -&gt;  + PBMMC_batch &rarr; + T_batch &rarr; Integrated_data_set</p>
+</li>
+</ol>
+<p>!!! note ""</p>
+<p>To do this we need a nested list that looks like this:</p>
+<p><code>bash
+   list(
+    list("ETV6-RUNX1_1", "ETV6-RUNX1_2", "ETV6-RUNX1_3", "ETV6-RUNX1_4"),
+    list("HHD_1", "HHD_2"),
+    list("PBMMC_1", "PBMMC_2", "PBMMC_3"),
+    list("PRE-T_1", "PRE-T_2")
+    )</code>
+    !!! r-project-2 "So, to apply this we would use the following:"</p>
+<div class="highlight"><pre><span></span><code>    ```r
+    sce_all &lt;- readRDS(&quot;R_objects/Caron_dimRed.500.rds&quot;)
+   table(sce_all$SampleName)
+   merge_order &lt;- list(
+             list(&quot;ETV6-RUNX1_1&quot;, &quot;ETV6-RUNX1_2&quot;, &quot;ETV6-RUNX1_3&quot;, &quot;ETV6-RUNX1_4&quot;),
+             list(&quot;HHD_1&quot;, &quot;HHD_2&quot;),
+             list(&quot;PBMMC_1&quot;, &quot;PBMMC_2&quot;, &quot;PBMMC_3&quot;),
+             list(&quot;PRE-T_1&quot;, &quot;PRE-T_2&quot;)
+                      )
+
+   sce_all_corrected &lt;- quickCorrect(sce_all,
+                                     batch = sce_all$SampleName,
+                                      PARAM = FastMnnParam(merge.order = merge_order)
+                                      )$corrected
+
+    # add the corrected matrix to the original object - to keep it all together
+    reducedDim(sce_all, &quot;corrected_mo&quot;) &lt;- reducedDim(sce_all_corrected, &quot;corrected&quot;)
+
+    #  add a tSNE using the corrected data
+    set.seed(323)
+    sce_all &lt;- runTSNE(sce_all, 
+                       dimred = &quot;corrected_mo&quot;,
+                       name = &quot;TSNE_corrected_mo&quot;)
+    ```
+    !!! note &quot;&quot;
+    &lt;br&gt;
+
+    === &quot;Uncorrected TSNE&quot;
+        ```r
+       plotReducedDim(sce_all, dimred = &quot;TSNE&quot;, colour_by = &quot;SampleName&quot;)
+        ```
+        ![image](../r_images/46-batchcorrect-uncorrectedTSNE.png)
+
+    === &quot;Corrected TSNE - default merge order&quot;
+
+        ```r
+       plotReducedDim(sce_all, dimred = &quot;TSNE_corrected&quot;, colour_by = &quot;SampleName&quot;)
+       ```
+       ![image](../r_images/47-batchcorrect-correctedTSNE-defaultmerge.png)
+
+   === &quot;Corrected TSNE - merger by sample group&quot;
+
+        ```r
+        plotReducedDim(sce_all, dimred = &quot;TSNE_corrected_mo&quot;, colour_by = &quot;SampleName&quot;)
+        ```
+        ![image](../r_images/48-batchcorrect-correctedTSNE-mergeby-samplegroup.png)
+</code></pre></div>
+</details>
+<h2 id="correction-diagnostics">Correction Diagnostics<a class="headerlink" href="#correction-diagnostics" title="Permanent link">&para;</a></h2>
+<h3 id="mixing-between-batches-bar-plots">Mixing Between Batches - Bar plots<a class="headerlink" href="#mixing-between-batches-bar-plots" title="Permanent link">&para;</a></h3>
+<p>As before, we can explore our data to see if clustering the cells using the corrected data results in batches containing cells from multiple samples/batches, rather than being skewed to having one-batch-per-cluster.</p>
+<p>This clustering serves as a proxy for the population structure. So, if the batch effect is successfully corrected, clusters corresponding to shared cell types or states should contain cells from multiple batches.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Uncorrected batches</label><label for="__tabbed_2_2">Corrected batches</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="admonition r-project">
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">sce_all</span><span class="o">$</span><span class="n">cluster_uncorrected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;PCA&quot;</span><span class="p">)</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="nf">data.frame</span><span class="p">(</span><span class="n">Cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">cluster_uncorrected</span><span class="p">,</span><span class="w"> </span><span class="n">Sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">  </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cluster</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span><span class="nf">geom_bar</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">),</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fill&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MNN-uncorrected data&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">  </span><span class="nf">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scales</span><span class="o">::</span><span class="n">percent</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/49-batchcorrect-mixbetween-uncorrected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/49-batchcorrect-mixbetween-uncorrected.png" /></a></p>
+</div>
+</div>
+<div class="tabbed-block">
+<div class="admonition r-project">
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">sce_all</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterCells</span><span class="p">(</span><span class="n">sce_all</span><span class="p">,</span><span class="w"> </span><span class="n">use.dimred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;corrected&quot;</span><span class="p">)</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="nf">data.frame</span><span class="p">(</span><span class="n">Cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="p">,</span><span class="w"> </span><span class="n">Sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span><span class="nf">ggplot</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cluster</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">    </span><span class="nf">geom_bar</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sample</span><span class="p">),</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fill&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MNN-corrected data&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">  </span><span class="nf">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scales</span><span class="o">::</span><span class="n">percent</span><span class="p">)</span>
+</code></pre></div>
+<a class="glightbox" href="../../r_images/50-batchcorrect-mixbetween-corrected.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/50-batchcorrect-mixbetween-corrected.png" /></a></p>
+</div>
+</div>
+</div>
+</div>
+<h3 id="mixing-between-batches-variance-of-batch-abundancies-in-clusters">Mixing Between Batches - variance of batch abundancies in clusters<a class="headerlink" href="#mixing-between-batches-variance-of-batch-abundancies-in-clusters" title="Permanent link">&para;</a></h3>
+<p>One approach to assess the degree of mixing between clusters is to calculate the variance in the log-normalized cell abundances across batches for each cluster. A high variance value in this case represents a cluster with unequal representation of cells from each batch. Therefore, those clusters with the highest variance values may be due to incomplete correction. Alternatively, these may be due to true biological differences between batches (which could be investigated, for example, by looking at the expression of known cell-type-specific genes).</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<ul>
+<li>This is a qualitative, exploratory method to diagnose issues with batch correction. As we can see from this table, this is a good indication of clusters with an extreme imbalance of cells from different clusters, but we can see that there is a limitation in making strong conclusions from clusters that have an overall low number of cells.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">cluster_var</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">clusterAbundanceVar</span><span class="p">(</span><span class="n">sce_all</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">                                   </span><span class="n">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="n">batch_per_cluster</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">table</span><span class="p">(</span><span class="n">Cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">cluster_corrected</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">                           </span><span class="n">Batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sce_all</span><span class="o">$</span><span class="n">SampleName</span><span class="p">)</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="n">batch_per_cluster</span><span class="p">[</span><span class="nf">order</span><span class="p">(</span><span class="n">cluster_var</span><span class="p">,</span><span class="w"> </span><span class="n">decreasing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">),</span><span class="w"> </span><span class="p">]</span>
+</code></pre></div></li>
+</ul>
+</div>
+<h3 id="preserving-biological-heterogeneity">Preserving Biological Heterogeneity<a class="headerlink" href="#preserving-biological-heterogeneity" title="Permanent link">&para;</a></h3>
+<p>Another useful diagnostic check is to compare the pre-correction clustering of each batch to the clustering of the same cells in the corrected data. Accurate data integration should preserve population structure within each batch as there is no batch effect to remove between cells in the same batch. This check complements the previously mentioned diagnostics that only focus on the removal of differences between batches. Specifically, it protects us against scenarios where the correction method simply aggregates all cells together, which would achieve perfect mixing but also discard the biological heterogeneity of interest. Lets go back to our simple two sample example to look at some of the ways we can investigate.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="nf">table</span><span class="p">(</span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">))</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="nf">table</span><span class="p">(</span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">))</span>
+</code></pre></div></p>
+</div>
+<h4 id="nesting-of-before-and-after-correction-clusters">Nesting of before and after correction clusters<a class="headerlink" href="#nesting-of-before-and-after-correction-clusters" title="Permanent link">&para;</a></h4>
+<p>Ideally, we should see a many-to-1 mapping where the post-correction clustering is nested inside the pre-correction clustering. This indicates that any within-batch structure was preserved after correction while acknowledging that greater resolution is possible with more cells. We quantify this mapping using the nestedClusters() function from the bluster package, which identifies the nesting of post-correction clusters within the pre-correction clusters. Well-nested clusters have high max values, indicating that most of their cells are derived from a single pre-correction cluster.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">original_clusters</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">)</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">corrected_clusters_rep1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sce</span><span class="p">[,</span><span class="nf">colnames</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">)]</span><span class="o">$</span><span class="n">cluster_corrected</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="n">tab</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">nestedClusters</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="nf">paste</span><span class="p">(</span><span class="s">&quot;before&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">original_clusters</span><span class="p">),</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">                      </span><span class="n">alt</span><span class="o">=</span><span class="nf">paste</span><span class="p">(</span><span class="s">&quot;after&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">corrected_clusters_rep1</span><span class="p">))</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="n">tab</span><span class="o">$</span><span class="n">alt.mapping</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/51-batchcorrect-nestingbefore-sample1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/51-batchcorrect-nestingbefore-sample1.png" width="600" /></a></center></p>
+</div>
+<div class="admonition r-project-2">
+<p class="admonition-title">We can visualize this mapping for the samples</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nf">pheatmap</span><span class="p">(</span><span class="n">tab</span><span class="o">$</span><span class="n">proportions</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">         </span><span class="n">cluster_row</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">         </span><span class="n">cluster_col</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">         </span><span class="n">main</span><span class="o">=</span><span class="s">&quot;Sample 1 comparison&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/52-batchcorrect-nestingbefore-sample2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/52-batchcorrect-nestingbefore-sample2.png" width="600" /></a></center></p>
+</div>
+<details class="file-code">
+<summary>Rand index</summary>
+<h4 id="adjusted-rand-index">Adjusted Rand index<a class="headerlink" href="#adjusted-rand-index" title="Permanent link">&para;</a></h4>
+<p>We can use the adjusted Rand index to quantify the agreement between the clusterings before and after batch correction. The adjusted Rand index gives us a measure of the proportion of pairs of cells that have the same relative status in both clusterings - i.e. they were are in the same cluster in both clusterings or they are in different clusters in both clusterings, as opposed to, for example, being in the same cluster in one clustering and different clusters in the other.</p>
+<p>Larger indices are more desirable as this indicates that within-batch heterogeneity is preserved, though this must be balanced against the ability of each method to actually perform batch correction.</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="nf">pairwiseRand</span><span class="p">(</span><span class="n">corrected_clusters_rep1</span><span class="p">,</span><span class="w"> </span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">),</span><span class="w"> </span><span class="n">mode</span><span class="o">=</span><span class="s">&quot;index&quot;</span><span class="p">)</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="nf">pairwiseRand</span><span class="p">(</span><span class="n">corrected_clusters_rep2</span><span class="p">,</span><span class="w"> </span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">),</span><span class="w"> </span><span class="n">mode</span><span class="o">=</span><span class="s">&quot;index&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">tab</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pairwiseRand</span><span class="p">(</span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep1</span><span class="p">),</span><span class="w"> </span><span class="n">corrected_clusters_rep1</span><span class="p">)</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="nf">pheatmap</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">         </span><span class="n">cluster_row</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">         </span><span class="n">cluster_col</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="w">         </span><span class="n">main</span><span class="o">=</span><span class="s">&quot;Sample 1 probabilities&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/53-batchcorrect-adjustrandindex-sample-1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/53-batchcorrect-adjustrandindex-sample-1.png" width="600" /></a></center></p>
+</div>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">tab</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pairwiseRand</span><span class="p">(</span><span class="nf">colLabels</span><span class="p">(</span><span class="n">sce_rep2</span><span class="p">),</span><span class="w"> </span><span class="n">corrected_clusters_rep2</span><span class="p">)</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="nf">pheatmap</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">         </span><span class="n">cluster_row</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="w">         </span><span class="n">cluster_col</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="w">         </span><span class="n">main</span><span class="o">=</span><span class="s">&quot;Sample 2 probabilities&quot;</span><span class="p">)</span>
+</code></pre></div>
+<center><a class="glightbox" href="../../r_images/54-batchcorrect-adjustrandindex-sample-2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="image" src="../../r_images/54-batchcorrect-adjustrandindex-sample-2.png" width="600" /></a></center></p>
+</div>
+</details>
+<h3 id="mnn-specific-test">MNN specific test<a class="headerlink" href="#mnn-specific-test" title="Permanent link">&para;</a></h3>
+<p>For fastMNN(), one useful diagnostic is the proportion of variance within each batch that is lost during MNN correction. Specifically, this refers to the within-batch variance that is removed during orthogonalization with respect to the average correction vector at each merge step. This is returned via the lost.var field in the metadata of mnn.out, which contains a matrix of the variance lost in each batch (column) at each merge step (row).</p>
+<div class="admonition r-project">
+<p class="admonition-title">code</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nf">metadata</span><span class="p">(</span><span class="n">sce_quick_mnn</span><span class="p">)</span><span class="o">$</span><span class="n">merge.info</span><span class="o">$</span><span class="n">lost.var</span>
+</code></pre></div>
+<p>Large proportions of lost variance (&gt;10%) suggest that correction is removing genuine biological heterogeneity. This would occur due to violations of the assumption of orthogonality between the batch effect and the biological subspace (Haghverdi et al. 2018). In this case, the proportion of lost variance is smaller, indicating that non-orthogonality is not to much of a major concern</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../5/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 5. Feature Selection and Dimensionality Reduction">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                5. Feature Selection and Dimensionality Reduction
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../7/" class="md-footer__link md-footer__link--next" aria-label="Next: 7. Clustering">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                7. Clustering
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Analysis of single cell RNA-seq data workshop material is licensed under a <a rel="noopener" target="_blank" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License v3.0</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
